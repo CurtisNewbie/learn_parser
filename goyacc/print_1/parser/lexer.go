@@ -2,10 +2,15 @@ package parser
 
 import (
 	"fmt"
+	"strings"
 	"unicode"
+
+	"github.com/curtisnewbie/miso/miso"
 )
 
-//go:generate goyacc parser.y
+var (
+	vmrt = newVm()
+)
 
 type vm struct {
 	script    string
@@ -15,12 +20,12 @@ type vm struct {
 
 func (v *vm) Lex(lval *yySymType) int {
 	for {
-		// println("debug: for")
+		miso.Debug("run for")
 		if c, ok := v.next(); ok {
 			switch {
 			case c == '\'':
 				return v.parseString(lval)
-			case c == '\n' || c == ' ':
+			case c == '\n' || c == ' ' || c == '\t':
 				v.move(1)
 				continue
 			case c == 'p': // print or assignment
@@ -30,8 +35,13 @@ func (v *vm) Lex(lval *yySymType) int {
 				return v.parseLabel(lval)
 			case unicode.IsLetter(c):
 				return v.parseLabel(lval)
+			case c == '/':
+				if ch, ok := v.lookAheadAt(1); ok && ch == '/' {
+					v.move(len(v.script) - v.offset)
+					return 0
+				}
 			default:
-				// println("debug: default", c, string(c))
+				miso.Debugf("default %v, %v", c, string(c))
 				v.move(1)
 				return int(c)
 			}
@@ -47,7 +57,7 @@ func (v *vm) Error(s string) {
 }
 
 func (v *vm) next() (rune, bool) {
-	// println("debug: next")
+	miso.Debug("next")
 	if v.offset >= len(v.script) {
 		return 0, false
 	}
@@ -56,7 +66,7 @@ func (v *vm) next() (rune, bool) {
 }
 
 func (v *vm) lookAheadAt(n int) (rune, bool) {
-	// println("debug: lookAheadAt ", n)
+	miso.Debugf("lookAheadAt %v", n)
 	if v.offset+n >= len(v.script) {
 		return 0, false
 	}
@@ -66,11 +76,11 @@ func (v *vm) lookAheadAt(n int) (rune, bool) {
 
 func (v *vm) move(gap int) {
 	v.offset = v.offset + gap
-	// println("debug: move", gap, "to", v.offset)
+	miso.Debugf("move %v to %v", gap, v.offset)
 }
 
 func (v *vm) parseLabel(lval *yySymType) int {
-	// println("debug: parseLabel, v.script[v.offset:]", v.script[v.offset:])
+	miso.Debugf("parseLabel, v.script[v.offset:]=%v", v.script[v.offset:])
 	i := 1
 	for {
 		if c, ok := v.lookAheadAt(i); ok {
@@ -84,20 +94,20 @@ func (v *vm) parseLabel(lval *yySymType) int {
 		}
 	}
 	lval.strv = v.script[v.offset : v.offset+i]
-	// println("debug: label.strv ", lval.strv)
+	miso.Debugf("label.strv: %v", lval.strv)
 	v.move(i)
-	// println("debug: offset: ", v.script[v.offset:])
+	miso.Debugf("offset: %v", v.script[v.offset:])
 	return Label
 }
 
 func (v *vm) parseString(lval *yySymType) int {
-	// println("debug: parsestring, starting at", v.offset)
+	miso.Debugf("parsestring, starting at: %v", v.offset)
 	i := 2
 	for {
 		if c, ok := v.lookAheadAt(i); ok {
 			if c == '\'' {
-				lval.strv = v.script[v.offset : v.offset+i]
-				// println("debug: lval.strv ", v.script[v.offset+1:v.offset+i], " ", v.offset, " ", v.offset+i)
+				lval.strv = v.script[v.offset+1 : v.offset+i]
+				miso.Debugf("lval.strv: %v, %v, %v", v.script[v.offset+1:v.offset+i], v.offset, v.offset+i)
 				v.move(i + 1)
 				return String
 			}
@@ -110,42 +120,37 @@ func (v *vm) parseString(lval *yySymType) int {
 }
 
 func (v *vm) parsePrint(lval *yySymType) (int, bool) {
-	if v.offset+5 >= len(v.script) {
+	miso.Debug("parsePrint")
+	if v.offset+4 >= len(v.script) {
 		return 0, false
 	}
 
-	i := 1
-	for {
-		if c, ok := v.lookAheadAt(i); ok {
-			if c == ' ' {
-				i += 1
-				continue
-			} else {
-				break
-			}
-		} else {
-			break
-		}
-	}
-
-	pre := v.script[v.offset+i : v.offset+i+5]
+	pre := v.script[v.offset : v.offset+5]
+	miso.Debugf("pre: %v", pre)
 	if pre == "print" {
-		v.move(i + 5)
+		v.move(5)
 		return Print, true
 	}
 	return 0, false
 }
 
-func newVm(s string) *vm {
+func newVm() *vm {
 	return &vm{
-		script:    s,
 		globalvar: make(map[string]any),
 	}
 }
 
 func Parse(s string) {
+	lines := strings.Split(s, "\n")
+	miso.SetLogLevel("info")
 	yyErrorVerbose = true
-	vm := newVm(s)
-	yyParse(vm)
-	fmt.Printf("vars: %#v\n", vm.globalvar)
+	for _, l := range lines {
+		if strings.TrimSpace(l) == "" {
+			continue
+		}
+		vmrt.script = l
+		vmrt.offset = 0
+		yyParse(vmrt)
+		miso.Debugf("vars: %#v\n", vmrt.globalvar)
+	}
 }

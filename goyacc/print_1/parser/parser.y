@@ -1,6 +1,10 @@
 %{
 package parser
 
+import (
+    "fmt"
+)
+
 %}
 
 %union{
@@ -23,23 +27,23 @@ expression:
 
 print_st: Print String
 {
-    print($2.strv)
+    println($2.strv)
 }
 | Print Number
 {
-    print($2.intv)
+    println($2.intv)
 }
-
-value: String | Number
+| Print Label
 {
-    $$ = $1
+    v := yylex.(*vm).globalvar[$2.strv]
+    fmt.Printf("%#v\n", v)
 }
 
 assignment: Label '=' String
 {
-    yylex.(*vm).globalvar[$1.strv] = $3
+    yylex.(*vm).globalvar[$1.strv] = $3.strv
 }
 | Label '=' Number
 {
-    yylex.(*vm).globalvar[$1.intv] = $3
+    yylex.(*vm).globalvar[$1.strv] = $3.intv
 }
