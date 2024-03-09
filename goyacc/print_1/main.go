@@ -7,13 +7,7 @@ import (
 )
 
 func main() {
-	// s := `
-	// 	s = 'ok' // comments: s = '???'
-	// 	s = 'not ok'
-	// 	print  'reading s'
-	// 	print s
-	// `
-
+	println("VM Running:\n")
 	for {
 		scanner := bufio.NewScanner(os.Stdin)
 		for scanner.Scan() {

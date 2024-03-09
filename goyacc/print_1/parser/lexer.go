@@ -10,7 +10,8 @@ import (
 )
 
 var (
-	vmrt = newVm()
+	vmrt    = newVm()
+	printKw = []string{"print", "echo"}
 )
 
 type vm struct {
@@ -30,12 +31,9 @@ func (v *vm) Lex(lval *yySymType) int {
 				v.move(1)
 				continue
 			case unicode.IsLetter(c):
-				if d, ok := v.parseKeyword(lval, "print", Print); ok {
+				if d, ok := v.parseKeywords(lval, printKw, Print); ok {
 					return d
 				}
-				// if d, ok := v.parseKeyword(lval, "echo", Print); ok {
-				// 	return d
-				// }
 				return v.parseLabel(lval)
 			case unicode.IsDigit(c):
 				return v.parseNumber(lval)
@@ -148,6 +146,15 @@ func (v *vm) parseString(lval *yySymType) int {
 	panic(fmt.Sprintf("illegal syntax for string, %#v", v))
 }
 
+func (v *vm) parseKeywords(lval *yySymType, keywords []string, keywordType int) (int, bool) {
+	for _, kw := range keywords {
+		if i, ok := v.parseKeyword(lval, kw, keywordType); ok {
+			return i, true
+		}
+	}
+	return 0, false
+}
+
 func (v *vm) parseKeyword(lval *yySymType, keyword string, keywordType int) (int, bool) {
 	miso.Debugf("parseKeyword, %v, %v", keyword, keywordType)
 
@@ -164,21 +171,6 @@ func (v *vm) parseKeyword(lval *yySymType, keyword string, keywordType int) (int
 	}
 	return 0, false
 }
-
-// func (v *vm) parsePrint(lval *yySymType) (int, bool) {
-// 	miso.Debug("parsePrint")
-// 	if v.offset+4 >= len(v.script) {
-// 		return 0, false
-// 	}
-
-// 	pre := v.script[v.offset : v.offset+5]
-// 	miso.Debugf("pre: %v", pre)
-// 	if pre == "print" {
-// 		v.move(5)
-// 		return Print, true
-// 	}
-// 	return 0, false
-// }
 
 func newVm() *vm {
 	return &vm{

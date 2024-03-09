@@ -2,7 +2,10 @@ module demo
 
 go 1.21.5
 
-require github.com/curtisnewbie/miso v0.0.27
+require (
+	github.com/curtisnewbie/miso v0.0.27
+	github.com/spf13/cast v1.5.0
+)
 
 require (
 	github.com/armon/go-metrics v0.4.0 // indirect
@@ -55,7 +58,6 @@ require (
 	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/sirupsen/logrus v1.9.0 // indirect
 	github.com/spf13/afero v1.9.2 // indirect
-	github.com/spf13/cast v1.5.0 // indirect
 	github.com/spf13/jwalterweatherman v1.1.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.14.0 // indirect
