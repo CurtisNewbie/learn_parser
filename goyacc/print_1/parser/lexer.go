@@ -29,12 +29,13 @@ func (v *vm) Lex(lval *yySymType) int {
 			case c == '\n' || c == ' ' || c == '\t':
 				v.move(1)
 				continue
-			case c == 'p': // print or assignment
-				if d, ok := v.parsePrint(lval); ok {
+			case unicode.IsLetter(c):
+				if d, ok := v.parseKeyword(lval, "print", Print); ok {
 					return d
 				}
-				return v.parseLabel(lval)
-			case unicode.IsLetter(c):
+				// if d, ok := v.parseKeyword(lval, "echo", Print); ok {
+				// 	return d
+				// }
 				return v.parseLabel(lval)
 			case unicode.IsDigit(c):
 				return v.parseNumber(lval)
@@ -108,7 +109,7 @@ func (v *vm) parseLabel(lval *yySymType) int {
 	i := 1
 	for {
 		if c, ok := v.lookAheadAt(i); ok {
-			if c == ' ' {
+			if !unicode.IsLetter(c) {
 				break
 			} else {
 				i += 1
@@ -147,20 +148,37 @@ func (v *vm) parseString(lval *yySymType) int {
 	panic(fmt.Sprintf("illegal syntax for string, %#v", v))
 }
 
-func (v *vm) parsePrint(lval *yySymType) (int, bool) {
-	miso.Debug("parsePrint")
-	if v.offset+4 >= len(v.script) {
+func (v *vm) parseKeyword(lval *yySymType, keyword string, keywordType int) (int, bool) {
+	miso.Debugf("parseKeyword, %v, %v", keyword, keywordType)
+
+	kwl := len(keyword)
+	if v.offset+kwl >= len(v.script) {
 		return 0, false
 	}
 
-	pre := v.script[v.offset : v.offset+5]
+	pre := v.script[v.offset : v.offset+kwl]
 	miso.Debugf("pre: %v", pre)
-	if pre == "print" {
-		v.move(5)
-		return Print, true
+	if pre == keyword {
+		v.move(kwl)
+		return keywordType, true
 	}
 	return 0, false
 }
+
+// func (v *vm) parsePrint(lval *yySymType) (int, bool) {
+// 	miso.Debug("parsePrint")
+// 	if v.offset+4 >= len(v.script) {
+// 		return 0, false
+// 	}
+
+// 	pre := v.script[v.offset : v.offset+5]
+// 	miso.Debugf("pre: %v", pre)
+// 	if pre == "print" {
+// 		v.move(5)
+// 		return Print, true
+// 	}
+// 	return 0, false
+// }
 
 func newVm() *vm {
 	return &vm{

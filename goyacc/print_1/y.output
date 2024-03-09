@@ -2,13 +2,14 @@
 state 0
 	$accept: .expression $end 
 
-	Print  shift 5
-	Label  shift 4
+	Print  shift 6
+	Label  shift 5
 	.  error
 
 	expression  goto 1
 	assignment  goto 2
 	print_st  goto 3
+	label_st  goto 4
 
 state 1
 	$accept:  expression.$end 
@@ -30,72 +31,88 @@ state 3
 
 
 state 4
-	assignment:  Label.'=' String 
-	assignment:  Label.'=' Number 
+	expression:  label_st.    (3)
 
-	'='  shift 6
-	.  error
+	.  reduce 3 (src line 27)
 
 
 state 5
+	label_st:  Label.    (4)
+	assignment:  Label.'=' String 
+	assignment:  Label.'=' Number 
+	assignment:  Label.'=' Label 
+
+	'='  shift 7
+	.  reduce 4 (src line 29)
+
+
+state 6
 	print_st:  Print.String 
 	print_st:  Print.Number 
 	print_st:  Print.Label 
 
-	String  shift 7
-	Number  shift 8
-	Label  shift 9
-	.  error
-
-
-state 6
-	assignment:  Label '='.String 
-	assignment:  Label '='.Number 
-
-	String  shift 10
-	Number  shift 11
+	String  shift 8
+	Number  shift 9
+	Label  shift 10
 	.  error
 
 
 state 7
-	print_st:  Print String.    (3)
+	assignment:  Label '='.String 
+	assignment:  Label '='.Number 
+	assignment:  Label '='.Label 
 
-	.  reduce 3 (src line 28)
+	String  shift 11
+	Number  shift 12
+	Label  shift 13
+	.  error
 
 
 state 8
-	print_st:  Print Number.    (4)
+	print_st:  Print String.    (5)
 
-	.  reduce 4 (src line 32)
+	.  reduce 5 (src line 34)
 
 
 state 9
-	print_st:  Print Label.    (5)
+	print_st:  Print Number.    (6)
 
-	.  reduce 5 (src line 36)
+	.  reduce 6 (src line 38)
 
 
 state 10
-	assignment:  Label '=' String.    (6)
+	print_st:  Print Label.    (7)
 
-	.  reduce 6 (src line 42)
+	.  reduce 7 (src line 42)
 
 
 state 11
-	assignment:  Label '=' Number.    (7)
+	assignment:  Label '=' String.    (8)
 
-	.  reduce 7 (src line 46)
+	.  reduce 8 (src line 48)
 
 
-8 terminals, 4 nonterminals
-8 grammar rules, 12/16000 states
+state 12
+	assignment:  Label '=' Number.    (9)
+
+	.  reduce 9 (src line 52)
+
+
+state 13
+	assignment:  Label '=' Label.    (10)
+
+	.  reduce 10 (src line 56)
+
+
+8 terminals, 5 nonterminals
+11 grammar rules, 14/16000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
-53 working sets used
-memory: parser 2/240000
+54 working sets used
+memory: parser 3/240000
 0 extra closures
-8 shift entries, 1 exceptions
-3 goto entries
+9 shift entries, 1 exceptions
+4 goto entries
 0 entries saved by goto default
-Optimizer space used: output 11/240000
-11 table entries, 0 zero
+Optimizer space used: output 13/240000
+13 table entries, 0 zero
 maximum spread: 8, maximum offset: 8

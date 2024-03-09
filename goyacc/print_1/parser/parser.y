@@ -24,6 +24,12 @@ import (
 expression:
     assignment
     | print_st
+    | label_st
+
+label_st: Label
+{
+    fmt.Printf("Syntax error: are you trying to read %v?\n", $1.strv)
+}
 
 print_st: Print String
 {
@@ -46,4 +52,8 @@ assignment: Label '=' String
 | Label '=' Number
 {
     yylex.(*vm).globalvar[$1.strv] = $3.intv
+}
+| Label '=' Label
+{
+    yylex.(*vm).globalvar[$1.strv] = yylex.(*vm).globalvar[$3.strv]
 }

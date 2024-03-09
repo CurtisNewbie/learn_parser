@@ -19,7 +19,7 @@ func main() {
 		for scanner.Scan() {
 			inp := scanner.Text()
 			if inp == "exit" {
-				println("byte")
+				println("bye")
 				return
 			}
 			parser.Parse(inp)
