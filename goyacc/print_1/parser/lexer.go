@@ -6,6 +6,7 @@ import (
 	"unicode"
 
 	"github.com/curtisnewbie/miso/miso"
+	"github.com/spf13/cast"
 )
 
 var (
@@ -35,6 +36,8 @@ func (v *vm) Lex(lval *yySymType) int {
 				return v.parseLabel(lval)
 			case unicode.IsLetter(c):
 				return v.parseLabel(lval)
+			case unicode.IsDigit(c):
+				return v.parseNumber(lval)
 			case c == '/':
 				if ch, ok := v.lookAheadAt(1); ok && ch == '/' {
 					v.move(len(v.script) - v.offset)
@@ -79,8 +82,29 @@ func (v *vm) move(gap int) {
 	miso.Debugf("move %v to %v", gap, v.offset)
 }
 
+func (v *vm) parseNumber(lval *yySymType) int {
+	miso.Debugf("parseNumber, remaining=%v", v.remaining())
+	i := 1
+	for {
+		if c, ok := v.lookAheadAt(i); ok {
+			if c == ' ' {
+				break
+			} else {
+				i += 1
+			}
+		} else {
+			break
+		}
+	}
+	lval.intv = cast.ToInt(v.script[v.offset : v.offset+i])
+	miso.Debugf("label.intv: %v", lval.intv)
+	v.move(i)
+	miso.Debugf("offset: %v", v.remaining())
+	return Number
+}
+
 func (v *vm) parseLabel(lval *yySymType) int {
-	miso.Debugf("parseLabel, v.script[v.offset:]=%v", v.script[v.offset:])
+	miso.Debugf("parseLabel, remaining=%v", v.remaining())
 	i := 1
 	for {
 		if c, ok := v.lookAheadAt(i); ok {
@@ -98,6 +122,10 @@ func (v *vm) parseLabel(lval *yySymType) int {
 	v.move(i)
 	miso.Debugf("offset: %v", v.script[v.offset:])
 	return Label
+}
+
+func (v *vm) remaining() string {
+	return v.script[v.offset:]
 }
 
 func (v *vm) parseString(lval *yySymType) int {
