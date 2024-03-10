@@ -78,7 +78,7 @@ func PrintYySymDebug(y yySymType) {
 	n := y.val.(string)
 	glob := GlobalVar()
 	v := glob[n]
-	fmt.Printf("%#v <%v>\n", v, reflect.TypeOf(v))
+	fmt.Printf("%v: %#v <%v>\n", n, v, reflect.TypeOf(v))
 }
 
 func PrintYySym(y yySymType) {
