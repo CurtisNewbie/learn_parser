@@ -5,7 +5,7 @@ package parser
 
 %union{
     hint string
-	val any
+    val any
 }
 
 %token String
