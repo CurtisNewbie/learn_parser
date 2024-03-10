@@ -3,9 +3,9 @@ package parser
 import (
 	"fmt"
 	"strings"
+	"time"
 	"unicode"
 
-	"github.com/curtisnewbie/miso/miso"
 	"github.com/spf13/cast"
 )
 
@@ -23,7 +23,7 @@ type vm struct {
 
 func (v *vm) Lex(lval *yySymType) int {
 	for {
-		miso.Debug("run for")
+		Debug("run for")
 		if c, ok := v.next(); ok {
 			switch {
 			case c == '\'':
@@ -47,7 +47,7 @@ func (v *vm) Lex(lval *yySymType) int {
 				v.move(gap)
 				return Comment
 			default:
-				miso.Debugf("default %v, %v", c, string(c))
+				Debugf("default %v, %v", c, string(c))
 				v.move(1)
 				return int(c)
 			}
@@ -63,7 +63,7 @@ func (v *vm) Error(s string) {
 }
 
 func (v *vm) next() (rune, bool) {
-	miso.Debug("next")
+	Debug("next")
 	if v.offset >= len(v.script) {
 		return 0, false
 	}
@@ -72,7 +72,7 @@ func (v *vm) next() (rune, bool) {
 }
 
 func (v *vm) lookAheadAt(n int) (rune, bool) {
-	miso.Debugf("lookAheadAt %v", n)
+	Debugf("lookAheadAt %v", n)
 	if v.offset+n >= len(v.script) {
 		return 0, false
 	}
@@ -89,11 +89,11 @@ func (v *vm) lookAheadIs(n int, c rune) bool {
 
 func (v *vm) move(gap int) {
 	v.offset = v.offset + gap
-	miso.Debugf("move %v to %v", gap, v.offset)
+	Debugf("move %v to %v", gap, v.offset)
 }
 
 func (v *vm) parseNumber(lval *yySymType) int {
-	miso.Debugf("parseNumber, remaining=%v", v.remaining())
+	Debugf("parseNumber, remaining=%v", v.remaining())
 	i := 1
 	isFloat := false
 	for {
@@ -115,14 +115,14 @@ func (v *vm) parseNumber(lval *yySymType) int {
 	} else {
 		lval.val = cast.ToInt64(v.script[v.offset : v.offset+i])
 	}
-	miso.Debugf("label.val: %v", lval.val)
+	Debugf("label.val: %v", lval.val)
 	v.move(i)
-	miso.Debugf("offset: %v", v.remaining())
+	Debugf("offset: %v", v.remaining())
 	return Number
 }
 
 func (v *vm) parseLabel(lval *yySymType) int {
-	miso.Debugf("parseLabel, remaining=%v", v.remaining())
+	Debugf("parseLabel, remaining=%v", v.remaining())
 	i := 1
 	for {
 		if c, ok := v.lookAheadAt(i); ok {
@@ -136,9 +136,9 @@ func (v *vm) parseLabel(lval *yySymType) int {
 		}
 	}
 	lval.val = v.script[v.offset : v.offset+i]
-	miso.Debugf("label.val: %v", lval.val)
+	Debugf("label.val: %v", lval.val)
 	v.move(i)
-	miso.Debugf("offset: %v", v.script[v.offset:])
+	Debugf("offset: %v", v.script[v.offset:])
 	return Label
 }
 
@@ -147,13 +147,13 @@ func (v *vm) remaining() string {
 }
 
 func (v *vm) parseString(lval *yySymType) int {
-	miso.Debugf("parsestring, starting at: %v", v.offset)
+	Debugf("parsestring, starting at: %v", v.offset)
 	i := 1 // [0] is '\''
 	for {
 		if c, ok := v.lookAheadAt(i); ok {
 			if c == '\'' {
 				lval.val = v.script[v.offset+1 : v.offset+i]
-				miso.Debugf("lval.val : %v, %v, %v", v.script[v.offset+1:v.offset+i], v.offset, v.offset+i)
+				Debugf("lval.val : %v, %v, %v", v.script[v.offset+1:v.offset+i], v.offset, v.offset+i)
 				v.move(i + 1)
 				return String
 			}
@@ -175,15 +175,15 @@ func (v *vm) parseKeywords(lval *yySymType, keywords []string, keywordType int) 
 }
 
 func (v *vm) parseKeyword(lval *yySymType, keyword string, keywordType int) (int, bool) {
-	miso.Debugf("parseKeyword, %v, %v", keyword, keywordType)
+	Debugf("parseKeyword, %v, %v", keyword, keywordType)
 
 	kwl := len(keyword)
-	if v.offset+kwl >= len(v.script) {
+	if v.offset+kwl > len(v.script) {
 		return 0, false
 	}
 
 	pre := v.script[v.offset : v.offset+kwl]
-	miso.Debugf("pre: %v", pre)
+	Debugf("pre: %v", pre)
 	if pre == keyword {
 		v.move(kwl)
 		return keywordType, true
@@ -197,17 +197,29 @@ func newVm() *vm {
 	}
 }
 
-func Parse(s string) {
-	lines := strings.Split(s, "\n")
-	miso.SetLogLevel("info")
+func Run(s string) {
+	// EnableDebug()
 	yyErrorVerbose = true
+
+	start := time.Now()
+	defer func() { Debugf("VM ran for %v, script: \n%v\n", time.Since(start), s) }()
+	lines := strings.Split(s, "\n")
 	for _, l := range lines {
 		if strings.TrimSpace(l) == "" {
 			continue
 		}
-		vmrt.script = l
-		vmrt.offset = 0
-		yyParse(vmrt)
-		miso.Debugf("vars: %#v\n", vmrt.globalvar)
+		interpret(l)
 	}
+}
+
+func interpret(s string) {
+	defer func() {
+		if e := recover(); e != nil {
+			fmt.Printf("Fatal Error: %v\n\n", e)
+		}
+	}()
+	vmrt.script = s
+	vmrt.offset = 0
+	yyParse(vmrt)
+	Debugf("vars: %#v\n", vmrt.globalvar)
 }

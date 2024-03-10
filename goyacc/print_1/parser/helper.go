@@ -7,6 +7,10 @@ import (
 	"github.com/spf13/cast"
 )
 
+var (
+	debug = false
+)
+
 func ValAdd(a any, b any) any {
 	ta := reflect.TypeOf(a)
 	tb := reflect.TypeOf(b)
@@ -97,4 +101,25 @@ func PrintType(y yySymType) {
 
 func SyntaxError() {
 	println("syntax error")
+}
+
+func EnableDebug() {
+	debug = true
+}
+
+func Debug(args ...any) {
+	if debug {
+		j := make([]any, len(args)+1)
+		j[0] = "[DEBUG]"
+		for i := range args {
+			j[i+1] = args[i]
+		}
+		fmt.Println(j...)
+	}
+}
+
+func Debugf(s string, args ...any) {
+	if debug {
+		fmt.Printf("[DEBUG] "+s+"\n", args...)
+	}
 }
