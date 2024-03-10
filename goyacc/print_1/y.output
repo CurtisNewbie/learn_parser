@@ -2,9 +2,10 @@
 state 0
 	$accept: .expression $end 
 
-	Print  shift 8
+	Number  shift 15
+	Print  shift 9
 	Label  shift 4
-	Type  shift 9
+	Type  shift 10
 	.  error
 
 	expression  goto 1
@@ -13,6 +14,11 @@ state 0
 	print_st  goto 5
 	label_st  goto 6
 	type_st  goto 7
+	arith_st  goto 8
+	plus_st  goto 11
+	minus_st  goto 12
+	mul_st  goto 13
+	div_st  goto 14
 
 state 1
 	$accept:  expression.$end 
@@ -24,129 +30,503 @@ state 1
 state 2
 	expression:  assignment.    (1)
 
-	.  reduce 1 (src line 26)
+	.  reduce 1 (src line 24)
 
 
 state 3
 	expression:  statement.    (2)
 
-	.  reduce 2 (src line 28)
+	.  reduce 2 (src line 26)
 
 
 state 4
-	label_st:  Label.    (6)
+	label_st:  Label.    (11)
 	assignment:  Label.'=' String 
 	assignment:  Label.'=' Number 
 	assignment:  Label.'=' Label 
+	assignment:  Label.'=' arith_st 
+	assignment:  Label.'=' 
+	plus_st:  Label.'+' Number 
+	plus_st:  Label.'+' Label 
+	minus_st:  Label.'-' Number 
+	minus_st:  Label.'-' Label 
+	mul_st:  Label.'*' Number 
+	mul_st:  Label.'*' Label 
+	div_st:  Label.'/' Number 
+	div_st:  Label.'/' Label 
 
-	'='  shift 10
-	.  reduce 6 (src line 35)
+	'+'  shift 17
+	'-'  shift 18
+	'*'  shift 19
+	'/'  shift 20
+	'='  shift 16
+	.  reduce 11 (src line 36)
 
 
 state 5
 	statement:  print_st.    (3)
 
-	.  reduce 3 (src line 30)
+	.  reduce 3 (src line 28)
 
 
 state 6
 	statement:  label_st.    (4)
 
-	.  reduce 4 (src line 32)
+	.  reduce 4 (src line 30)
 
 
 state 7
 	statement:  type_st.    (5)
 
-	.  reduce 5 (src line 33)
+	.  reduce 5 (src line 31)
 
 
 state 8
+	statement:  arith_st.    (6)
+	plus_st:  arith_st.'+' Number 
+	plus_st:  arith_st.'+' Label 
+	minus_st:  arith_st.'-' Number 
+	minus_st:  arith_st.'-' Label 
+	mul_st:  arith_st.'*' Number 
+	mul_st:  arith_st.'*' Label 
+	div_st:  arith_st.'/' Number 
+	div_st:  arith_st.'/' Label 
+
+	'+'  shift 21
+	'-'  shift 22
+	'*'  shift 23
+	'/'  shift 24
+	.  reduce 6 (src line 32)
+
+
+state 9
 	print_st:  Print.Value 
 	print_st:  Print.Label 
 
-	String  shift 13
-	Number  shift 14
-	Label  shift 12
+	String  shift 27
+	Number  shift 28
+	Label  shift 26
 	.  error
 
-	Value  goto 11
-
-state 9
-	type_st:  Type.Label 
-
-	Label  shift 15
-	.  error
-
+	Value  goto 25
 
 state 10
-	assignment:  Label '='.String 
-	assignment:  Label '='.Number 
-	assignment:  Label '='.Label 
+	type_st:  Type.Label 
 
-	String  shift 16
-	Number  shift 17
-	Label  shift 18
+	Label  shift 29
 	.  error
 
 
 state 11
-	print_st:  Print Value.    (9)
+	arith_st:  plus_st.    (7)
 
-	.  reduce 9 (src line 42)
+	.  reduce 7 (src line 34)
 
 
 state 12
-	print_st:  Print Label.    (10)
+	arith_st:  minus_st.    (8)
 
-	.  reduce 10 (src line 45)
+	.  reduce 8 (src line 34)
 
 
 state 13
-	Value:  String.    (7)
+	arith_st:  mul_st.    (9)
 
-	.  reduce 7 (src line 40)
+	.  reduce 9 (src line 34)
 
 
 state 14
-	Value:  Number.    (8)
+	arith_st:  div_st.    (10)
 
-	.  reduce 8 (src line 40)
+	.  reduce 10 (src line 34)
 
 
 state 15
-	type_st:  Type Label.    (14)
+	plus_st:  Number.'+' Number 
+	plus_st:  Number.'+' Label 
+	minus_st:  Number.'-' Number 
+	minus_st:  Number.'-' Label 
+	mul_st:  Number.'*' Number 
+	mul_st:  Number.'*' Label 
+	div_st:  Number.'/' Number 
+	div_st:  Number.'/' Label 
 
-	.  reduce 14 (src line 69)
+	'+'  shift 30
+	'-'  shift 31
+	'*'  shift 32
+	'/'  shift 33
+	.  error
 
 
 state 16
-	assignment:  Label '=' String.    (11)
+	assignment:  Label '='.String 
+	assignment:  Label '='.Number 
+	assignment:  Label '='.Label 
+	assignment:  Label '='.arith_st 
+	assignment:  Label '='.    (20)
 
-	.  reduce 11 (src line 52)
+	String  shift 34
+	Number  shift 35
+	Label  shift 36
+	.  reduce 20 (src line 66)
 
+	arith_st  goto 37
+	plus_st  goto 11
+	minus_st  goto 12
+	mul_st  goto 13
+	div_st  goto 14
 
 state 17
-	assignment:  Label '=' Number.    (12)
+	plus_st:  Label '+'.Number 
+	plus_st:  Label '+'.Label 
 
-	.  reduce 12 (src line 57)
+	Number  shift 38
+	Label  shift 39
+	.  error
 
 
 state 18
-	assignment:  Label '=' Label.    (13)
+	minus_st:  Label '-'.Number 
+	minus_st:  Label '-'.Label 
 
-	.  reduce 13 (src line 62)
+	Number  shift 40
+	Label  shift 41
+	.  error
 
 
-9 terminals, 8 nonterminals
-15 grammar rules, 19/16000 states
+state 19
+	mul_st:  Label '*'.Number 
+	mul_st:  Label '*'.Label 
+
+	Number  shift 42
+	Label  shift 43
+	.  error
+
+
+state 20
+	div_st:  Label '/'.Number 
+	div_st:  Label '/'.Label 
+
+	Number  shift 44
+	Label  shift 45
+	.  error
+
+
+state 21
+	plus_st:  arith_st '+'.Number 
+	plus_st:  arith_st '+'.Label 
+
+	Number  shift 46
+	Label  shift 47
+	.  error
+
+
+state 22
+	minus_st:  arith_st '-'.Number 
+	minus_st:  arith_st '-'.Label 
+
+	Number  shift 48
+	Label  shift 49
+	.  error
+
+
+state 23
+	mul_st:  arith_st '*'.Number 
+	mul_st:  arith_st '*'.Label 
+
+	Number  shift 50
+	Label  shift 51
+	.  error
+
+
+state 24
+	div_st:  arith_st '/'.Number 
+	div_st:  arith_st '/'.Label 
+
+	Number  shift 52
+	Label  shift 53
+	.  error
+
+
+state 25
+	print_st:  Print Value.    (14)
+
+	.  reduce 14 (src line 43)
+
+
+state 26
+	print_st:  Print Label.    (15)
+
+	.  reduce 15 (src line 46)
+
+
+state 27
+	Value:  String.    (12)
+
+	.  reduce 12 (src line 41)
+
+
+state 28
+	Value:  Number.    (13)
+
+	.  reduce 13 (src line 41)
+
+
+state 29
+	type_st:  Type Label.    (21)
+
+	.  reduce 21 (src line 69)
+
+
+state 30
+	plus_st:  Number '+'.Number 
+	plus_st:  Number '+'.Label 
+
+	Number  shift 54
+	Label  shift 55
+	.  error
+
+
+state 31
+	minus_st:  Number '-'.Number 
+	minus_st:  Number '-'.Label 
+
+	Number  shift 56
+	Label  shift 57
+	.  error
+
+
+state 32
+	mul_st:  Number '*'.Number 
+	mul_st:  Number '*'.Label 
+
+	Number  shift 58
+	Label  shift 59
+	.  error
+
+
+state 33
+	div_st:  Number '/'.Number 
+	div_st:  Number '/'.Label 
+
+	Number  shift 60
+	Label  shift 61
+	.  error
+
+
+state 34
+	assignment:  Label '=' String.    (16)
+
+	.  reduce 16 (src line 51)
+
+
+state 35
+	assignment:  Label '=' Number.    (17)
+	plus_st:  Number.'+' Number 
+	plus_st:  Number.'+' Label 
+	minus_st:  Number.'-' Number 
+	minus_st:  Number.'-' Label 
+	mul_st:  Number.'*' Number 
+	mul_st:  Number.'*' Label 
+	div_st:  Number.'/' Number 
+	div_st:  Number.'/' Label 
+
+	'+'  shift 30
+	'-'  shift 31
+	'*'  shift 32
+	'/'  shift 33
+	.  reduce 17 (src line 55)
+
+
+state 36
+	assignment:  Label '=' Label.    (18)
+	plus_st:  Label.'+' Number 
+	plus_st:  Label.'+' Label 
+	minus_st:  Label.'-' Number 
+	minus_st:  Label.'-' Label 
+	mul_st:  Label.'*' Number 
+	mul_st:  Label.'*' Label 
+	div_st:  Label.'/' Number 
+	div_st:  Label.'/' Label 
+
+	'+'  shift 17
+	'-'  shift 18
+	'*'  shift 19
+	'/'  shift 20
+	.  reduce 18 (src line 59)
+
+
+state 37
+	assignment:  Label '=' arith_st.    (19)
+	plus_st:  arith_st.'+' Number 
+	plus_st:  arith_st.'+' Label 
+	minus_st:  arith_st.'-' Number 
+	minus_st:  arith_st.'-' Label 
+	mul_st:  arith_st.'*' Number 
+	mul_st:  arith_st.'*' Label 
+	div_st:  arith_st.'/' Number 
+	div_st:  arith_st.'/' Label 
+
+	'+'  shift 21
+	'-'  shift 22
+	'*'  shift 23
+	'/'  shift 24
+	.  reduce 19 (src line 63)
+
+
+state 38
+	plus_st:  Label '+' Number.    (23)
+
+	.  reduce 23 (src line 81)
+
+
+state 39
+	plus_st:  Label '+' Label.    (25)
+
+	.  reduce 25 (src line 97)
+
+
+state 40
+	minus_st:  Label '-' Number.    (29)
+
+	.  reduce 29 (src line 129)
+
+
+state 41
+	minus_st:  Label '-' Label.    (31)
+
+	.  reduce 31 (src line 145)
+
+
+state 42
+	mul_st:  Label '*' Number.    (35)
+
+	.  reduce 35 (src line 177)
+
+
+state 43
+	mul_st:  Label '*' Label.    (37)
+
+	.  reduce 37 (src line 193)
+
+
+state 44
+	div_st:  Label '/' Number.    (41)
+
+	.  reduce 41 (src line 225)
+
+
+state 45
+	div_st:  Label '/' Label.    (43)
+
+	.  reduce 43 (src line 241)
+
+
+state 46
+	plus_st:  arith_st '+' Number.    (26)
+
+	.  reduce 26 (src line 106)
+
+
+state 47
+	plus_st:  arith_st '+' Label.    (27)
+
+	.  reduce 27 (src line 113)
+
+
+state 48
+	minus_st:  arith_st '-' Number.    (32)
+
+	.  reduce 32 (src line 154)
+
+
+state 49
+	minus_st:  arith_st '-' Label.    (33)
+
+	.  reduce 33 (src line 161)
+
+
+state 50
+	mul_st:  arith_st '*' Number.    (38)
+
+	.  reduce 38 (src line 202)
+
+
+state 51
+	mul_st:  arith_st '*' Label.    (39)
+
+	.  reduce 39 (src line 209)
+
+
+state 52
+	div_st:  arith_st '/' Number.    (44)
+
+	.  reduce 44 (src line 250)
+
+
+state 53
+	div_st:  arith_st '/' Label.    (45)
+
+	.  reduce 45 (src line 257)
+
+
+state 54
+	plus_st:  Number '+' Number.    (22)
+
+	.  reduce 22 (src line 73)
+
+
+state 55
+	plus_st:  Number '+' Label.    (24)
+
+	.  reduce 24 (src line 89)
+
+
+state 56
+	minus_st:  Number '-' Number.    (28)
+
+	.  reduce 28 (src line 121)
+
+
+state 57
+	minus_st:  Number '-' Label.    (30)
+
+	.  reduce 30 (src line 137)
+
+
+state 58
+	mul_st:  Number '*' Number.    (34)
+
+	.  reduce 34 (src line 169)
+
+
+state 59
+	mul_st:  Number '*' Label.    (36)
+
+	.  reduce 36 (src line 185)
+
+
+state 60
+	div_st:  Number '/' Number.    (40)
+
+	.  reduce 40 (src line 217)
+
+
+state 61
+	div_st:  Number '/' Label.    (42)
+
+	.  reduce 42 (src line 233)
+
+
+13 terminals, 13 nonterminals
+46 grammar rules, 62/16000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
-57 working sets used
-memory: parser 6/240000
+62 working sets used
+memory: parser 16/240000
 0 extra closures
-11 shift entries, 1 exceptions
-7 goto entries
-0 entries saved by goto default
-Optimizer space used: output 18/240000
-18 table entries, 0 zero
-maximum spread: 9, maximum offset: 9
+60 shift entries, 1 exceptions
+13 goto entries
+4 entries saved by goto default
+Optimizer space used: output 65/240000
+65 table entries, 0 zero
+maximum spread: 13, maximum offset: 16

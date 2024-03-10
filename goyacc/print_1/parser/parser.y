@@ -1,11 +1,6 @@
 %{
 package parser
 
-import (
-    "fmt"
-    "reflect"
-)
-
 %}
 
 %union{
@@ -19,6 +14,9 @@ import (
 %token Label
 %token Type
 
+%left '+' '-'
+%left '*' '/'
+
 %start expression
 
 %%
@@ -31,10 +29,13 @@ statement:
     print_st
     | label_st
     | type_st
+    | arith_st
+
+arith_st: plus_st | minus_st | mul_st | div_st
 
 label_st: Label
 {
-    fmt.Printf("Syntax error")
+    PrintYySymDebug($1, yylex)
 }
 
 Value: String | Number
@@ -44,31 +45,219 @@ print_st: Print Value {
 }
 | Print Label
 {
-    n := $2.val.(string)
-    v := yylex.(*vm).globalvar[n]
-    fmt.Printf("%#v\n", v)
+    PrintYySym($2, yylex)
 }
 
 assignment: Label '=' String
 {
-    n := $1.val.(string)
-    yylex.(*vm).globalvar[n] = $3.val
+    GlobalVarWrite(yylex, $1, $3.val)
 }
 | Label '=' Number
 {
-    n := $1.val.(string)
-    yylex.(*vm).globalvar[n] = $3.val
+    GlobalVarWrite(yylex, $1, $3.val)
 }
 | Label '=' Label
 {
-    n1 := $1.val.(string)
-    n2 := $3.val.(string)
-    yylex.(*vm).globalvar[n1] = yylex.(*vm).globalvar[n2]
+    GlobalVarCopy(yylex, $1, $3)
 }
+| Label '=' arith_st {
+    GlobalVarWrite(yylex, $1, $3.val)
+}
+| Label '='
+
 
 type_st: Type Label {
-    n := $2.val.(string)
-    val := yylex.(*vm).globalvar[n]
-    typ := reflect.TypeOf(val)
-    fmt.Printf("%s: <%v>\n", n, typ)
+    PrintType($1, yylex)
+}
+
+plus_st: Number '+' Number
+{
+	val := ValAdd($1.val, $3.val)
+	sy := yySymType{
+		val: val,
+	}
+    $$ = sy
+}
+| Label '+' Number
+{
+    v1 := GlobalVarRead(yylex, $1)
+    res := ValAdd(v1, $3.val)
+    $$ = yySymType {
+        val: res,
+    }
+}
+| Number '+' Label
+{
+    v3 := GlobalVarRead(yylex, $3)
+    res := ValAdd(v3, $1.val)
+    $$ = yySymType {
+        val: res,
+    }
+}
+| Label '+' Label
+{
+    v1 := GlobalVarRead(yylex, $1)
+    v3 := GlobalVarRead(yylex, $3)
+    res := ValAdd(v1, v3)
+    $$ = yySymType {
+        val: res,
+    }
+}
+| arith_st '+' Number {
+	val := ValAdd($1.val, $3.val)
+	sy := yySymType{
+		val: val,
+	}
+    $$ = sy
+}
+| arith_st '+' Label {
+    v3 := GlobalVarRead(yylex, $3)
+    res := ValAdd(v3, $1.val)
+    $$ = yySymType {
+        val: res,
+    }
+}
+
+minus_st: Number '-' Number
+{
+	val := ValMinus($1.val, $3.val)
+	sy := yySymType{
+		val: val,
+	}
+    $$ = sy
+}
+| Label '-' Number
+{
+    v1 := GlobalVarRead(yylex, $1)
+    res := ValMinus(v1, $3.val)
+    $$ = yySymType {
+        val: res,
+    }
+}
+| Number '-' Label
+{
+    v3 := GlobalVarRead(yylex, $3)
+    res := ValMinus(v3, $1.val)
+    $$ = yySymType {
+        val: res,
+    }
+}
+| Label '-' Label
+{
+    v1 := GlobalVarRead(yylex, $1)
+    v3 := GlobalVarRead(yylex, $3)
+    res := ValMinus(v1, v3)
+    $$ = yySymType {
+        val: res,
+    }
+}
+| arith_st '-' Number {
+	val := ValMinus($1.val, $3.val)
+	sy := yySymType{
+		val: val,
+	}
+    $$ = sy
+}
+| arith_st '-' Label {
+    v3 := GlobalVarRead(yylex, $3)
+    res := ValMinus(v3, $1.val)
+    $$ = yySymType {
+        val: res,
+    }
+}
+
+mul_st: Number '*' Number
+{
+	val := ValMul($1.val, $3.val)
+	sy := yySymType{
+		val: val,
+	}
+    $$ = sy
+}
+| Label '*' Number
+{
+    v1 := GlobalVarRead(yylex, $1)
+    res := ValMul(v1, $3.val)
+    $$ = yySymType {
+        val: res,
+    }
+}
+| Number '*' Label
+{
+    v3 := GlobalVarRead(yylex, $3)
+    res := ValMul(v3, $1.val)
+    $$ = yySymType {
+        val: res,
+    }
+}
+| Label '*' Label
+{
+    v1 := GlobalVarRead(yylex, $1)
+    v3 := GlobalVarRead(yylex, $3)
+    res := ValMul(v1, v3)
+    $$ = yySymType {
+        val: res,
+    }
+}
+| arith_st '*' Number {
+	val := ValMul($1.val, $3.val)
+	sy := yySymType{
+		val: val,
+	}
+    $$ = sy
+}
+| arith_st '*' Label {
+    v3 := GlobalVarRead(yylex, $3)
+    res := ValMul(v3, $1.val)
+    $$ = yySymType {
+        val: res,
+    }
+}
+
+div_st: Number '/' Number
+{
+	val := ValMul($1.val, $3.val)
+	sy := yySymType{
+		val: val,
+	}
+    $$ = sy
+}
+| Label '/' Number
+{
+    v1 := GlobalVarRead(yylex, $1)
+    res := ValMul(v1, $3.val)
+    $$ = yySymType {
+        val: res,
+    }
+}
+| Number '/' Label
+{
+    v3 := GlobalVarRead(yylex, $3)
+    res := ValMul(v3, $1.val)
+    $$ = yySymType {
+        val: res,
+    }
+}
+| Label '/' Label
+{
+    v1 := GlobalVarRead(yylex, $1)
+    v3 := GlobalVarRead(yylex, $3)
+    res := ValMul(v1, v3)
+    $$ = yySymType {
+        val: res,
+    }
+}
+| arith_st '/' Number {
+	val := ValMul($1.val, $3.val)
+	sy := yySymType{
+		val: val,
+	}
+    $$ = sy
+}
+| arith_st '/' Label {
+    v3 := GlobalVarRead(yylex, $3)
+    res := ValMul(v3, $1.val)
+    $$ = yySymType {
+        val: res,
+    }
 }
