@@ -12,6 +12,7 @@ import (
 var (
 	vmrt    = newVm()
 	printKw = []string{"print", "echo"}
+	typeKw  = "type"
 )
 
 type vm struct {
@@ -31,7 +32,11 @@ func (v *vm) Lex(lval *yySymType) int {
 				v.move(1)
 				continue
 			case unicode.IsLetter(c):
+				// TODO: refactor to a table like matching
 				if d, ok := v.parseKeywords(lval, printKw, Print); ok {
+					return d
+				}
+				if d, ok := v.parseKeyword(lval, typeKw, Type); ok {
 					return d
 				}
 				return v.parseLabel(lval)

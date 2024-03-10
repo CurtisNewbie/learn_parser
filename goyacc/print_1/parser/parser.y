@@ -3,6 +3,7 @@ package parser
 
 import (
     "fmt"
+    "reflect"
 )
 
 %}
@@ -16,6 +17,7 @@ import (
 %token Number
 %token Print
 %token Label
+%token Type
 
 %start expression
 
@@ -23,12 +25,16 @@ import (
 
 expression:
     assignment
-    | print_st
+    | statement
+
+statement:
+    print_st
     | label_st
+    | type_st
 
 label_st: Label
 {
-    fmt.Printf("Syntax error: are you trying to read %v?\n", $1.val)
+    fmt.Printf("Syntax error")
 }
 
 Value: String | Number
@@ -58,4 +64,11 @@ assignment: Label '=' String
     n1 := $1.val.(string)
     n2 := $3.val.(string)
     yylex.(*vm).globalvar[n1] = yylex.(*vm).globalvar[n2]
+}
+
+type_st: Type Label {
+    n := $2.val.(string)
+    val := yylex.(*vm).globalvar[n]
+    typ := reflect.TypeOf(val)
+    fmt.Printf("%s: <%v>\n", n, typ)
 }

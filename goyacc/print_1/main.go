@@ -7,7 +7,7 @@ import (
 )
 
 func main() {
-	println("VM Running:\n")
+	println(">> VM Running, Starts Typing!")
 	for {
 		scanner := bufio.NewScanner(os.Stdin)
 		for scanner.Scan() {

@@ -9,9 +9,10 @@ import __yyfmt__ "fmt"
 
 import (
 	"fmt"
+	"reflect"
 )
 
-//line parser/parser.y:10
+//line parser/parser.y:11
 type yySymType struct {
 	yys int
 	typ string
@@ -22,6 +23,7 @@ const String = 57346
 const Number = 57347
 const Print = 57348
 const Label = 57349
+const Type = 57350
 
 var yyToknames = [...]string{
 	"$end",
@@ -31,6 +33,7 @@ var yyToknames = [...]string{
 	"Number",
 	"Print",
 	"Label",
+	"Type",
 	"'='",
 }
 
@@ -49,40 +52,40 @@ var yyExca = [...]int8{
 
 const yyPrivate = 57344
 
-const yyLast = 14
+const yyLast = 18
 
 var yyAct = [...]int8{
-	12, 13, 7, 14, 10, 11, 8, 9, 6, 5,
-	4, 3, 2, 1,
+	8, 4, 9, 16, 17, 10, 18, 13, 14, 15,
+	12, 11, 7, 6, 5, 3, 2, 1,
 }
 
 var yyPact = [...]int16{
-	2, -1000, -1000, -1000, -1000, -6, 0, -4, -1000, -1000,
-	-1000, -1000, -1000, -1000, -1000,
+	-6, -1000, -1000, -1000, -4, -1000, -1000, -1000, 3, 2,
+	-1, -1000, -1000, -1000, -1000, -1000, -1000, -1000, -1000,
 }
 
 var yyPgo = [...]int8{
-	0, 13, 12, 11, 10, 6,
+	0, 17, 16, 15, 14, 13, 12, 11,
 }
 
 var yyR1 = [...]int8{
-	0, 1, 1, 1, 4, 5, 5, 3, 3, 2,
-	2, 2,
+	0, 1, 1, 3, 3, 3, 5, 7, 7, 4,
+	4, 2, 2, 2, 6,
 }
 
 var yyR2 = [...]int8{
-	0, 1, 1, 1, 1, 1, 1, 2, 2, 3,
-	3, 3,
+	0, 1, 1, 1, 1, 1, 1, 1, 1, 2,
+	2, 3, 3, 3, 2,
 }
 
 var yyChk = [...]int16{
-	-1000, -1, -2, -3, -4, 7, 6, 8, -5, 7,
-	4, 5, 4, 5, 7,
+	-1000, -1, -2, -3, 7, -4, -5, -6, 6, 8,
+	9, -7, 7, 4, 5, 7, 4, 5, 7,
 }
 
 var yyDef = [...]int8{
-	0, -2, 1, 2, 3, 4, 0, 0, 7, 8,
-	5, 6, 9, 10, 11,
+	0, -2, 1, 2, 6, 3, 4, 5, 0, 0,
+	0, 9, 10, 7, 8, 14, 11, 12, 13,
 }
 
 var yyTok1 = [...]int8{
@@ -92,11 +95,11 @@ var yyTok1 = [...]int8{
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
 	3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-	3, 8,
+	3, 9,
 }
 
 var yyTok2 = [...]int8{
-	2, 3, 4, 5, 6, 7,
+	2, 3, 4, 5, 6, 7, 8,
 }
 
 var yyTok3 = [...]int8{
@@ -440,47 +443,56 @@ yydefault:
 	// dummy call; replaced with literal code
 	switch yynt {
 
-	case 4:
+	case 6:
 		yyDollar = yyS[yypt-1 : yypt+1]
-//line parser/parser.y:30
+//line parser/parser.y:36
 		{
 			fmt.Printf("Syntax error: are you trying to read %v?\n", yyDollar[1].val)
 		}
-	case 7:
+	case 9:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser/parser.y:36
+//line parser/parser.y:42
 		{
 			println(yyDollar[2].val)
 		}
-	case 8:
+	case 10:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser/parser.y:40
+//line parser/parser.y:46
 		{
 			n := yyDollar[2].val.(string)
 			v := yylex.(*vm).globalvar[n]
 			fmt.Printf("%#v\n", v)
 		}
-	case 9:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser/parser.y:47
-		{
-			n := yyDollar[1].val.(string)
-			yylex.(*vm).globalvar[n] = yyDollar[3].val
-		}
-	case 10:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser/parser.y:52
-		{
-			n := yyDollar[1].val.(string)
-			yylex.(*vm).globalvar[n] = yyDollar[3].val
-		}
 	case 11:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser/parser.y:57
+//line parser/parser.y:53
+		{
+			n := yyDollar[1].val.(string)
+			yylex.(*vm).globalvar[n] = yyDollar[3].val
+		}
+	case 12:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line parser/parser.y:58
+		{
+			n := yyDollar[1].val.(string)
+			yylex.(*vm).globalvar[n] = yyDollar[3].val
+		}
+	case 13:
+		yyDollar = yyS[yypt-3 : yypt+1]
+//line parser/parser.y:63
 		{
 			n1 := yyDollar[1].val.(string)
 			n2 := yyDollar[3].val.(string)
 			yylex.(*vm).globalvar[n1] = yylex.(*vm).globalvar[n2]
+		}
+	case 14:
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line parser/parser.y:69
+		{
+			n := yyDollar[2].val.(string)
+			val := yylex.(*vm).globalvar[n]
+			typ := reflect.TypeOf(val)
+			fmt.Printf("%s: <%v>\n", n, typ)
 		}
 	}
 	goto yystack /* stack new state and value */

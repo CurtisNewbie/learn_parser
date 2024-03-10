@@ -2,14 +2,17 @@
 state 0
 	$accept: .expression $end 
 
-	Print  shift 6
-	Label  shift 5
+	Print  shift 8
+	Label  shift 4
+	Type  shift 9
 	.  error
 
 	expression  goto 1
 	assignment  goto 2
-	print_st  goto 3
-	label_st  goto 4
+	statement  goto 3
+	print_st  goto 5
+	label_st  goto 6
+	type_st  goto 7
 
 state 1
 	$accept:  expression.$end 
@@ -21,104 +24,129 @@ state 1
 state 2
 	expression:  assignment.    (1)
 
-	.  reduce 1 (src line 24)
+	.  reduce 1 (src line 26)
 
 
 state 3
-	expression:  print_st.    (2)
+	expression:  statement.    (2)
 
-	.  reduce 2 (src line 26)
+	.  reduce 2 (src line 28)
 
 
 state 4
-	expression:  label_st.    (3)
-
-	.  reduce 3 (src line 27)
-
-
-state 5
-	label_st:  Label.    (4)
+	label_st:  Label.    (6)
 	assignment:  Label.'=' String 
 	assignment:  Label.'=' Number 
 	assignment:  Label.'=' Label 
 
-	'='  shift 7
-	.  reduce 4 (src line 29)
+	'='  shift 10
+	.  reduce 6 (src line 35)
+
+
+state 5
+	statement:  print_st.    (3)
+
+	.  reduce 3 (src line 30)
 
 
 state 6
+	statement:  label_st.    (4)
+
+	.  reduce 4 (src line 32)
+
+
+state 7
+	statement:  type_st.    (5)
+
+	.  reduce 5 (src line 33)
+
+
+state 8
 	print_st:  Print.Value 
 	print_st:  Print.Label 
 
-	String  shift 10
-	Number  shift 11
-	Label  shift 9
+	String  shift 13
+	Number  shift 14
+	Label  shift 12
 	.  error
 
-	Value  goto 8
+	Value  goto 11
 
-state 7
+state 9
+	type_st:  Type.Label 
+
+	Label  shift 15
+	.  error
+
+
+state 10
 	assignment:  Label '='.String 
 	assignment:  Label '='.Number 
 	assignment:  Label '='.Label 
 
-	String  shift 12
-	Number  shift 13
-	Label  shift 14
+	String  shift 16
+	Number  shift 17
+	Label  shift 18
 	.  error
 
 
-state 8
-	print_st:  Print Value.    (7)
-
-	.  reduce 7 (src line 36)
-
-
-state 9
-	print_st:  Print Label.    (8)
-
-	.  reduce 8 (src line 39)
-
-
-state 10
-	Value:  String.    (5)
-
-	.  reduce 5 (src line 34)
-
-
 state 11
-	Value:  Number.    (6)
+	print_st:  Print Value.    (9)
 
-	.  reduce 6 (src line 34)
+	.  reduce 9 (src line 42)
 
 
 state 12
-	assignment:  Label '=' String.    (9)
+	print_st:  Print Label.    (10)
 
-	.  reduce 9 (src line 46)
+	.  reduce 10 (src line 45)
 
 
 state 13
-	assignment:  Label '=' Number.    (10)
+	Value:  String.    (7)
 
-	.  reduce 10 (src line 51)
+	.  reduce 7 (src line 40)
 
 
 state 14
-	assignment:  Label '=' Label.    (11)
+	Value:  Number.    (8)
 
-	.  reduce 11 (src line 56)
+	.  reduce 8 (src line 40)
 
 
-8 terminals, 6 nonterminals
-12 grammar rules, 15/16000 states
+state 15
+	type_st:  Type Label.    (14)
+
+	.  reduce 14 (src line 69)
+
+
+state 16
+	assignment:  Label '=' String.    (11)
+
+	.  reduce 11 (src line 52)
+
+
+state 17
+	assignment:  Label '=' Number.    (12)
+
+	.  reduce 12 (src line 57)
+
+
+state 18
+	assignment:  Label '=' Label.    (13)
+
+	.  reduce 13 (src line 62)
+
+
+9 terminals, 8 nonterminals
+15 grammar rules, 19/16000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
-55 working sets used
-memory: parser 4/240000
+57 working sets used
+memory: parser 6/240000
 0 extra closures
-9 shift entries, 1 exceptions
-5 goto entries
+11 shift entries, 1 exceptions
+7 goto entries
 0 entries saved by goto default
-Optimizer space used: output 14/240000
-14 table entries, 0 zero
-maximum spread: 8, maximum offset: 8
+Optimizer space used: output 18/240000
+18 table entries, 0 zero
+maximum spread: 9, maximum offset: 9
