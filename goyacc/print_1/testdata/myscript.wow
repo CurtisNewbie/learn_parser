@@ -1,0 +1,7 @@
+a = 1 + 2 * 3
+print a // this should be 7
+print
+
+b = 1 * 2 + 3
+print b // this should be 5
+print

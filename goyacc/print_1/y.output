@@ -20,8 +20,10 @@ state 0
 
 state 1
 	$accept:  expression.$end 
+	expression:  expression.Comment 
 
 	$end  accept
+	Comment  shift 14
 	.  error
 
 
@@ -44,59 +46,61 @@ state 4
 
 
 state 5
-	label_st:  Label.    (8)
+	label_st:  Label.    (9)
 	assignment:  Label.'=' String 
 	assignment:  Label.'=' eval_expr 
 	assignment:  Label.'=' 
-	eval_expr:  Label.    (23)
+	eval_expr:  Label.    (24)
 
-	$end  reduce 8 (src line 37)
-	'='  shift 14
-	.  reduce 23 (src line 64)
+	$end  reduce 9 (src line 38)
+	Comment  reduce 9 (src line 38)
+	'='  shift 15
+	.  reduce 24 (src line 65)
 
 
 state 6
-	statement:  print_st.    (4)
+	statement:  print_st.    (5)
 
-	.  reduce 4 (src line 31)
+	.  reduce 5 (src line 32)
 
 
 state 7
-	statement:  label_st.    (5)
-
-	.  reduce 5 (src line 33)
-
-
-state 8
-	statement:  type_st.    (6)
+	statement:  label_st.    (6)
 
 	.  reduce 6 (src line 34)
 
 
-state 9
-	statement:  arith_st.    (7)
-	eval_expr:  arith_st.    (24)
+state 8
+	statement:  type_st.    (7)
 
-	$end  reduce 7 (src line 35)
-	.  reduce 24 (src line 65)
+	.  reduce 7 (src line 35)
+
+
+state 9
+	statement:  arith_st.    (8)
+	eval_expr:  arith_st.    (25)
+
+	$end  reduce 8 (src line 36)
+	Comment  reduce 8 (src line 36)
+	.  reduce 25 (src line 66)
 
 
 state 10
 	print_st:  Print.Value 
 	print_st:  Print.Label 
-	print_st:  Print.    (13)
+	print_st:  Print.    (14)
 
-	String  shift 17
-	Number  shift 18
-	Label  shift 16
-	.  reduce 13 (src line 46)
+	String  shift 18
+	Number  shift 19
+	Label  shift 17
+	.  reduce 14 (src line 47)
 
-	Value  goto 15
+	Value  goto 16
 
 state 11
 	type_st:  Type.Label 
 
-	Label  shift 19
+	Label  shift 20
 	.  error
 
 
@@ -106,165 +110,161 @@ state 12
 	arith_st:  eval_expr.'*' eval_expr 
 	arith_st:  eval_expr.'/' eval_expr 
 
-	'+'  shift 20
-	'-'  shift 21
-	'*'  shift 22
-	'/'  shift 23
+	'+'  shift 21
+	'-'  shift 22
+	'*'  shift 23
+	'/'  shift 24
 	.  error
 
 
 state 13
-	eval_expr:  Number.    (22)
+	eval_expr:  Number.    (23)
 
-	.  reduce 22 (src line 62)
+	.  reduce 23 (src line 63)
 
 
 state 14
-	assignment:  Label '='.String 
-	assignment:  Label '='.eval_expr 
-	assignment:  Label '='.    (17)
+	expression:  expression Comment.    (4)
 
-	String  shift 24
-	Number  shift 13
-	Label  shift 26
-	.  reduce 17 (src line 54)
+	.  reduce 4 (src line 30)
 
-	arith_st  goto 27
-	eval_expr  goto 25
 
 state 15
-	print_st:  Print Value.    (11)
+	assignment:  Label '='.String 
+	assignment:  Label '='.eval_expr 
+	assignment:  Label '='.    (18)
 
-	.  reduce 11 (src line 43)
+	String  shift 25
+	Number  shift 13
+	Label  shift 27
+	.  reduce 18 (src line 55)
 
+	arith_st  goto 28
+	eval_expr  goto 26
 
 state 16
-	print_st:  Print Label.    (12)
+	print_st:  Print Value.    (12)
 
-	.  reduce 12 (src line 45)
+	.  reduce 12 (src line 44)
 
 
 state 17
-	Value:  String.    (9)
+	print_st:  Print Label.    (13)
 
-	.  reduce 9 (src line 40)
+	.  reduce 13 (src line 46)
 
 
 state 18
-	Value:  Number.    (10)
+	Value:  String.    (10)
 
 	.  reduce 10 (src line 41)
 
 
 state 19
-	type_st:  Type Label.    (14)
+	Value:  Number.    (11)
 
-	.  reduce 14 (src line 48)
+	.  reduce 11 (src line 42)
 
 
 state 20
+	type_st:  Type Label.    (15)
+
+	.  reduce 15 (src line 49)
+
+
+state 21
 	arith_st:  eval_expr '+'.eval_expr 
 
 	Number  shift 13
-	Label  shift 26
+	Label  shift 27
 	.  error
 
-	arith_st  goto 27
-	eval_expr  goto 28
-
-state 21
-	arith_st:  eval_expr '-'.eval_expr 
-
-	Number  shift 13
-	Label  shift 26
-	.  error
-
-	arith_st  goto 27
+	arith_st  goto 28
 	eval_expr  goto 29
 
 state 22
-	arith_st:  eval_expr '*'.eval_expr 
+	arith_st:  eval_expr '-'.eval_expr 
 
 	Number  shift 13
-	Label  shift 26
+	Label  shift 27
 	.  error
 
-	arith_st  goto 27
+	arith_st  goto 28
 	eval_expr  goto 30
 
 state 23
-	arith_st:  eval_expr '/'.eval_expr 
+	arith_st:  eval_expr '*'.eval_expr 
 
 	Number  shift 13
-	Label  shift 26
+	Label  shift 27
 	.  error
 
-	arith_st  goto 27
+	arith_st  goto 28
 	eval_expr  goto 31
 
 state 24
-	assignment:  Label '=' String.    (15)
+	arith_st:  eval_expr '/'.eval_expr 
 
-	.  reduce 15 (src line 51)
+	Number  shift 13
+	Label  shift 27
+	.  error
 
+	arith_st  goto 28
+	eval_expr  goto 32
 
 state 25
-	assignment:  Label '=' eval_expr.    (16)
+	assignment:  Label '=' String.    (16)
+
+	.  reduce 16 (src line 52)
+
+
+state 26
+	assignment:  Label '=' eval_expr.    (17)
 	arith_st:  eval_expr.'+' eval_expr 
 	arith_st:  eval_expr.'-' eval_expr 
 	arith_st:  eval_expr.'*' eval_expr 
 	arith_st:  eval_expr.'/' eval_expr 
 
-	'+'  shift 20
-	'-'  shift 21
-	'*'  shift 22
-	'/'  shift 23
-	.  reduce 16 (src line 53)
-
-
-state 26
-	eval_expr:  Label.    (23)
-
-	.  reduce 23 (src line 64)
+	'+'  shift 21
+	'-'  shift 22
+	'*'  shift 23
+	'/'  shift 24
+	.  reduce 17 (src line 54)
 
 
 state 27
-	eval_expr:  arith_st.    (24)
+	eval_expr:  Label.    (24)
 
 	.  reduce 24 (src line 65)
 
 
 state 28
-	arith_st:  eval_expr.'+' eval_expr 
-	arith_st:  eval_expr '+' eval_expr.    (18)
-	arith_st:  eval_expr.'-' eval_expr 
-	arith_st:  eval_expr.'*' eval_expr 
-	arith_st:  eval_expr.'/' eval_expr 
+	eval_expr:  arith_st.    (25)
 
-	'*'  shift 22
-	'/'  shift 23
-	.  reduce 18 (src line 56)
+	.  reduce 25 (src line 66)
 
 
 state 29
 	arith_st:  eval_expr.'+' eval_expr 
+	arith_st:  eval_expr '+' eval_expr.    (19)
 	arith_st:  eval_expr.'-' eval_expr 
-	arith_st:  eval_expr '-' eval_expr.    (19)
 	arith_st:  eval_expr.'*' eval_expr 
 	arith_st:  eval_expr.'/' eval_expr 
 
-	'*'  shift 22
-	'/'  shift 23
-	.  reduce 19 (src line 58)
+	'*'  shift 23
+	'/'  shift 24
+	.  reduce 19 (src line 57)
 
 
 state 30
 	arith_st:  eval_expr.'+' eval_expr 
 	arith_st:  eval_expr.'-' eval_expr 
+	arith_st:  eval_expr '-' eval_expr.    (20)
 	arith_st:  eval_expr.'*' eval_expr 
-	arith_st:  eval_expr '*' eval_expr.    (20)
 	arith_st:  eval_expr.'/' eval_expr 
 
+	'*'  shift 23
+	'/'  shift 24
 	.  reduce 20 (src line 59)
 
 
@@ -272,21 +272,31 @@ state 31
 	arith_st:  eval_expr.'+' eval_expr 
 	arith_st:  eval_expr.'-' eval_expr 
 	arith_st:  eval_expr.'*' eval_expr 
+	arith_st:  eval_expr '*' eval_expr.    (21)
 	arith_st:  eval_expr.'/' eval_expr 
-	arith_st:  eval_expr '/' eval_expr.    (21)
 
 	.  reduce 21 (src line 60)
 
 
+state 32
+	arith_st:  eval_expr.'+' eval_expr 
+	arith_st:  eval_expr.'-' eval_expr 
+	arith_st:  eval_expr.'*' eval_expr 
+	arith_st:  eval_expr.'/' eval_expr 
+	arith_st:  eval_expr '/' eval_expr.    (22)
+
+	.  reduce 22 (src line 61)
+
+
 14 terminals, 10 nonterminals
-25 grammar rules, 32/16000 states
+26 grammar rules, 33/16000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
 59 working sets used
 memory: parser 19/240000
 1 extra closures
-33 shift entries, 3 exceptions
+34 shift entries, 5 exceptions
 15 goto entries
 4 entries saved by goto default
-Optimizer space used: output 36/240000
-36 table entries, 0 zero
-maximum spread: 14, maximum offset: 23
+Optimizer space used: output 37/240000
+37 table entries, 0 zero
+maximum spread: 14, maximum offset: 24

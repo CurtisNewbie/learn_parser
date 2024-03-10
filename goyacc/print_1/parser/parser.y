@@ -27,6 +27,7 @@ expression:
     assignment
     | statement
     | Comment
+    | expression Comment
 
 statement:
     print_st
