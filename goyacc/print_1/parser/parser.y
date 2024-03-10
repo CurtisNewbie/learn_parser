@@ -13,7 +13,9 @@ package parser
 %token Print
 %token Label
 %token Type
+%token Comment
 
+%left '='
 %left '+' '-'
 %left '*' '/'
 
@@ -24,6 +26,7 @@ package parser
 expression:
     assignment
     | statement
+    | Comment
 
 statement:
     print_st
@@ -32,32 +35,31 @@ statement:
     | arith_st
 
 label_st:
-    Label { PrintYySymDebug($1, yylex) }
+    Label { PrintYySymDebug($1) }
 
 Value:
     String | Number
 
 print_st:
-    Print Value { println($2.val) }
-    | Print Label { PrintYySym($2, yylex) }
+    Print Value { PrintYySym($2) }
+    | Print Label { PrintGlobalYySym($2) }
+    | Print { println("") }
 
 type_st:
-    Type Label { PrintType($2, yylex) }
+    Type Label { PrintType($2) }
 
 assignment:
-    Label '=' String { GlobalVarWrite(yylex, $1, $3.val) }
-    | Label '=' Number { GlobalVarWrite(yylex, $1, $3.val) }
-    | Label '=' Label { GlobalVarCopy(yylex, $1, $3) }
-    | Label '=' arith_st { GlobalVarWrite(yylex, $1, $3.val) }
+    Label '=' String { GlobalVarWrite($1, $3.val) }
+    | Label '=' eval_expr { GlobalVarWrite($1, $3.val) }
     | Label '=' { SyntaxError() }
 
 arith_st:
-    nval_expr '+' nval_expr { $$ = yySymType{ val: ValAdd($1.val, $3.val) } }
-    | nval_expr '-' nval_expr { $$ = yySymType{ val: ValMinus($1.val, $3.val) } }
-    | nval_expr '*' nval_expr { $$ = yySymType{ val: ValMul($1.val, $3.val) } }
-    | nval_expr '/' nval_expr { $$ = yySymType{ val: ValDiv($1.val, $3.val) } }
+    eval_expr '+' eval_expr { $$ = yySymType{ val: ValAdd($1.val, $3.val) } }
+    | eval_expr '-' eval_expr { $$ = yySymType{ val: ValMinus($1.val, $3.val) } }
+    | eval_expr '*' eval_expr { $$ = yySymType{ val: ValMul($1.val, $3.val) } }
+    | eval_expr '/' eval_expr { $$ = yySymType{ val: ValDiv($1.val, $3.val) } }
 
-nval_expr :
+eval_expr:
     Number { $$ = $1 }
-    | Label { $$ = yySymType { val: GlobalVarRead(yylex, $1) } }
+    | Label { $$ = yySymType { val: GlobalVarRead($1) } }
     | arith_st { $$ = $1 }

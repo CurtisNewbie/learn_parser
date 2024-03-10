@@ -2,20 +2,21 @@
 state 0
 	$accept: .expression $end 
 
-	Number  shift 12
-	Print  shift 9
-	Label  shift 4
-	Type  shift 10
+	Number  shift 13
+	Print  shift 10
+	Label  shift 5
+	Type  shift 11
+	Comment  shift 4
 	.  error
 
 	expression  goto 1
 	assignment  goto 2
 	statement  goto 3
-	print_st  goto 5
-	label_st  goto 6
-	type_st  goto 7
-	arith_st  goto 8
-	nval_expr  goto 11
+	print_st  goto 6
+	label_st  goto 7
+	type_st  goto 8
+	arith_st  goto 9
+	eval_expr  goto 12
 
 state 1
 	$accept:  expression.$end 
@@ -27,272 +28,265 @@ state 1
 state 2
 	expression:  assignment.    (1)
 
-	.  reduce 1 (src line 24)
+	.  reduce 1 (src line 26)
 
 
 state 3
 	expression:  statement.    (2)
 
-	.  reduce 2 (src line 26)
+	.  reduce 2 (src line 28)
 
 
 state 4
-	label_st:  Label.    (7)
-	assignment:  Label.'=' String 
-	assignment:  Label.'=' Number 
-	assignment:  Label.'=' Label 
-	assignment:  Label.'=' arith_st 
-	assignment:  Label.'=' 
-	nval_expr:  Label.    (23)
+	expression:  Comment.    (3)
 
-	$end  reduce 7 (src line 34)
-	'='  shift 13
-	.  reduce 23 (src line 62)
+	.  reduce 3 (src line 29)
 
 
 state 5
-	statement:  print_st.    (3)
+	label_st:  Label.    (8)
+	assignment:  Label.'=' String 
+	assignment:  Label.'=' eval_expr 
+	assignment:  Label.'=' 
+	eval_expr:  Label.    (23)
 
-	.  reduce 3 (src line 28)
+	$end  reduce 8 (src line 37)
+	'='  shift 14
+	.  reduce 23 (src line 64)
 
 
 state 6
-	statement:  label_st.    (4)
+	statement:  print_st.    (4)
 
-	.  reduce 4 (src line 30)
+	.  reduce 4 (src line 31)
 
 
 state 7
-	statement:  type_st.    (5)
+	statement:  label_st.    (5)
 
-	.  reduce 5 (src line 31)
+	.  reduce 5 (src line 33)
 
 
 state 8
-	statement:  arith_st.    (6)
-	nval_expr:  arith_st.    (24)
+	statement:  type_st.    (6)
 
-	$end  reduce 6 (src line 32)
-	.  reduce 24 (src line 63)
+	.  reduce 6 (src line 34)
 
 
 state 9
-	print_st:  Print.Value 
-	print_st:  Print.Label 
+	statement:  arith_st.    (7)
+	eval_expr:  arith_st.    (24)
 
-	String  shift 16
-	Number  shift 17
-	Label  shift 15
-	.  error
+	$end  reduce 7 (src line 35)
+	.  reduce 24 (src line 65)
 
-	Value  goto 14
 
 state 10
-	type_st:  Type.Label 
+	print_st:  Print.Value 
+	print_st:  Print.Label 
+	print_st:  Print.    (13)
 
-	Label  shift 18
-	.  error
+	String  shift 17
+	Number  shift 18
+	Label  shift 16
+	.  reduce 13 (src line 46)
 
+	Value  goto 15
 
 state 11
-	arith_st:  nval_expr.'+' nval_expr 
-	arith_st:  nval_expr.'-' nval_expr 
-	arith_st:  nval_expr.'*' nval_expr 
-	arith_st:  nval_expr.'/' nval_expr 
+	type_st:  Type.Label 
 
-	'+'  shift 19
-	'-'  shift 20
-	'*'  shift 21
-	'/'  shift 22
+	Label  shift 19
 	.  error
 
 
 state 12
-	nval_expr:  Number.    (22)
+	arith_st:  eval_expr.'+' eval_expr 
+	arith_st:  eval_expr.'-' eval_expr 
+	arith_st:  eval_expr.'*' eval_expr 
+	arith_st:  eval_expr.'/' eval_expr 
 
-	.  reduce 22 (src line 60)
+	'+'  shift 20
+	'-'  shift 21
+	'*'  shift 22
+	'/'  shift 23
+	.  error
 
 
 state 13
-	assignment:  Label '='.String 
-	assignment:  Label '='.Number 
-	assignment:  Label '='.Label 
-	assignment:  Label '='.arith_st 
-	assignment:  Label '='.    (17)
+	eval_expr:  Number.    (22)
 
-	String  shift 23
-	Number  shift 24
-	Label  shift 25
-	.  reduce 17 (src line 52)
+	.  reduce 22 (src line 62)
 
-	arith_st  goto 26
-	nval_expr  goto 11
 
 state 14
-	print_st:  Print Value.    (10)
+	assignment:  Label '='.String 
+	assignment:  Label '='.eval_expr 
+	assignment:  Label '='.    (17)
 
-	.  reduce 10 (src line 40)
+	String  shift 24
+	Number  shift 13
+	Label  shift 26
+	.  reduce 17 (src line 54)
 
+	arith_st  goto 27
+	eval_expr  goto 25
 
 state 15
-	print_st:  Print Label.    (11)
+	print_st:  Print Value.    (11)
 
-	.  reduce 11 (src line 42)
+	.  reduce 11 (src line 43)
 
 
 state 16
-	Value:  String.    (8)
+	print_st:  Print Label.    (12)
 
-	.  reduce 8 (src line 37)
+	.  reduce 12 (src line 45)
 
 
 state 17
-	Value:  Number.    (9)
+	Value:  String.    (9)
 
-	.  reduce 9 (src line 38)
+	.  reduce 9 (src line 40)
 
 
 state 18
-	type_st:  Type Label.    (12)
+	Value:  Number.    (10)
 
-	.  reduce 12 (src line 44)
+	.  reduce 10 (src line 41)
 
 
 state 19
-	arith_st:  nval_expr '+'.nval_expr 
+	type_st:  Type Label.    (14)
 
-	Number  shift 12
-	Label  shift 28
-	.  error
+	.  reduce 14 (src line 48)
 
-	arith_st  goto 29
-	nval_expr  goto 27
 
 state 20
-	arith_st:  nval_expr '-'.nval_expr 
+	arith_st:  eval_expr '+'.eval_expr 
 
-	Number  shift 12
-	Label  shift 28
+	Number  shift 13
+	Label  shift 26
 	.  error
 
-	arith_st  goto 29
-	nval_expr  goto 30
+	arith_st  goto 27
+	eval_expr  goto 28
 
 state 21
-	arith_st:  nval_expr '*'.nval_expr 
+	arith_st:  eval_expr '-'.eval_expr 
 
-	Number  shift 12
-	Label  shift 28
+	Number  shift 13
+	Label  shift 26
 	.  error
 
-	arith_st  goto 29
-	nval_expr  goto 31
+	arith_st  goto 27
+	eval_expr  goto 29
 
 state 22
-	arith_st:  nval_expr '/'.nval_expr 
+	arith_st:  eval_expr '*'.eval_expr 
 
-	Number  shift 12
-	Label  shift 28
+	Number  shift 13
+	Label  shift 26
 	.  error
 
-	arith_st  goto 29
-	nval_expr  goto 32
+	arith_st  goto 27
+	eval_expr  goto 30
 
 state 23
-	assignment:  Label '=' String.    (13)
+	arith_st:  eval_expr '/'.eval_expr 
 
-	.  reduce 13 (src line 47)
+	Number  shift 13
+	Label  shift 26
+	.  error
 
+	arith_st  goto 27
+	eval_expr  goto 31
 
 state 24
-	assignment:  Label '=' Number.    (14)
-	nval_expr:  Number.    (22)
+	assignment:  Label '=' String.    (15)
 
-	$end  reduce 14 (src line 49)
-	.  reduce 22 (src line 60)
+	.  reduce 15 (src line 51)
 
 
 state 25
-	assignment:  Label '=' Label.    (15)
-	nval_expr:  Label.    (23)
+	assignment:  Label '=' eval_expr.    (16)
+	arith_st:  eval_expr.'+' eval_expr 
+	arith_st:  eval_expr.'-' eval_expr 
+	arith_st:  eval_expr.'*' eval_expr 
+	arith_st:  eval_expr.'/' eval_expr 
 
-	$end  reduce 15 (src line 50)
-	.  reduce 23 (src line 62)
+	'+'  shift 20
+	'-'  shift 21
+	'*'  shift 22
+	'/'  shift 23
+	.  reduce 16 (src line 53)
 
 
 state 26
-	assignment:  Label '=' arith_st.    (16)
-	nval_expr:  arith_st.    (24)
+	eval_expr:  Label.    (23)
 
-	$end  reduce 16 (src line 51)
-	.  reduce 24 (src line 63)
+	.  reduce 23 (src line 64)
 
 
 state 27
-	arith_st:  nval_expr.'+' nval_expr 
-	arith_st:  nval_expr '+' nval_expr.    (18)
-	arith_st:  nval_expr.'-' nval_expr 
-	arith_st:  nval_expr.'*' nval_expr 
-	arith_st:  nval_expr.'/' nval_expr 
+	eval_expr:  arith_st.    (24)
 
-	'*'  shift 21
-	'/'  shift 22
-	.  reduce 18 (src line 54)
+	.  reduce 24 (src line 65)
 
 
 state 28
-	nval_expr:  Label.    (23)
+	arith_st:  eval_expr.'+' eval_expr 
+	arith_st:  eval_expr '+' eval_expr.    (18)
+	arith_st:  eval_expr.'-' eval_expr 
+	arith_st:  eval_expr.'*' eval_expr 
+	arith_st:  eval_expr.'/' eval_expr 
 
-	.  reduce 23 (src line 62)
+	'*'  shift 22
+	'/'  shift 23
+	.  reduce 18 (src line 56)
 
 
 state 29
-	nval_expr:  arith_st.    (24)
+	arith_st:  eval_expr.'+' eval_expr 
+	arith_st:  eval_expr.'-' eval_expr 
+	arith_st:  eval_expr '-' eval_expr.    (19)
+	arith_st:  eval_expr.'*' eval_expr 
+	arith_st:  eval_expr.'/' eval_expr 
 
-	.  reduce 24 (src line 63)
+	'*'  shift 22
+	'/'  shift 23
+	.  reduce 19 (src line 58)
 
 
 state 30
-	arith_st:  nval_expr.'+' nval_expr 
-	arith_st:  nval_expr.'-' nval_expr 
-	arith_st:  nval_expr '-' nval_expr.    (19)
-	arith_st:  nval_expr.'*' nval_expr 
-	arith_st:  nval_expr.'/' nval_expr 
+	arith_st:  eval_expr.'+' eval_expr 
+	arith_st:  eval_expr.'-' eval_expr 
+	arith_st:  eval_expr.'*' eval_expr 
+	arith_st:  eval_expr '*' eval_expr.    (20)
+	arith_st:  eval_expr.'/' eval_expr 
 
-	'*'  shift 21
-	'/'  shift 22
-	.  reduce 19 (src line 56)
+	.  reduce 20 (src line 59)
 
 
 state 31
-	arith_st:  nval_expr.'+' nval_expr 
-	arith_st:  nval_expr.'-' nval_expr 
-	arith_st:  nval_expr.'*' nval_expr 
-	arith_st:  nval_expr '*' nval_expr.    (20)
-	arith_st:  nval_expr.'/' nval_expr 
+	arith_st:  eval_expr.'+' eval_expr 
+	arith_st:  eval_expr.'-' eval_expr 
+	arith_st:  eval_expr.'*' eval_expr 
+	arith_st:  eval_expr.'/' eval_expr 
+	arith_st:  eval_expr '/' eval_expr.    (21)
 
-	.  reduce 20 (src line 57)
-
-
-state 32
-	arith_st:  nval_expr.'+' nval_expr 
-	arith_st:  nval_expr.'-' nval_expr 
-	arith_st:  nval_expr.'*' nval_expr 
-	arith_st:  nval_expr.'/' nval_expr 
-	arith_st:  nval_expr '/' nval_expr.    (21)
-
-	.  reduce 21 (src line 58)
+	.  reduce 21 (src line 60)
 
 
-13 terminals, 10 nonterminals
-25 grammar rules, 33/16000 states
+14 terminals, 10 nonterminals
+25 grammar rules, 32/16000 states
 0 shift/reduce, 0 reduce/reduce conflicts reported
 59 working sets used
 memory: parser 19/240000
 1 extra closures
-28 shift entries, 6 exceptions
+33 shift entries, 3 exceptions
 15 goto entries
 4 entries saved by goto default
-Optimizer space used: output 35/240000
-35 table entries, 0 zero
-maximum spread: 13, maximum offset: 22
+Optimizer space used: output 36/240000
+36 table entries, 0 zero
+maximum spread: 14, maximum offset: 23

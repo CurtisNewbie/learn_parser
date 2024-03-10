@@ -51,42 +51,46 @@ func ValDiv(a any, b any) any {
 	}
 }
 
-func GlobalVar(yylex yyLexer) map[string]any {
-	return yylex.(*vm).globalvar
+func GlobalVar() map[string]any {
+	return vmrt.globalvar
 }
 
-func GlobalVarRead(yylex yyLexer, y yySymType) any {
+func GlobalVarRead(y yySymType) any {
 	n := y.val.(string)
-	return GlobalVar(yylex)[n]
+	return GlobalVar()[n]
 }
 
-func GlobalVarWrite(yylex yyLexer, y yySymType, val any) {
+func GlobalVarWrite(y yySymType, val any) {
 	n := y.val.(string)
-	GlobalVar(yylex)[n] = val
+	GlobalVar()[n] = val
 }
 
-func GlobalVarCopy(yylex yyLexer, to yySymType, from yySymType) {
-	v := GlobalVarRead(yylex, from)
-	GlobalVarWrite(yylex, to, v)
+func GlobalVarCopy(to yySymType, from yySymType) {
+	v := GlobalVarRead(from)
+	GlobalVarWrite(to, v)
 }
 
-func PrintYySymDebug(y yySymType, yylex yyLexer) {
+func PrintYySymDebug(y yySymType) {
 	n := y.val.(string)
-	glob := GlobalVar(yylex)
+	glob := GlobalVar()
 	v := glob[n]
 	fmt.Printf("%#v <%v>\n", v, reflect.TypeOf(v))
 }
 
-func PrintYySym(y yySymType, yylex yyLexer) {
+func PrintYySym(y yySymType) {
+	fmt.Printf("%v\n", y.val)
+}
+
+func PrintGlobalYySym(y yySymType) {
 	n := y.val.(string)
-	glob := GlobalVar(yylex)
+	glob := GlobalVar()
 	v := glob[n]
 	fmt.Printf("%v\n", v)
 }
 
-func PrintType(y yySymType, yylex yyLexer) {
+func PrintType(y yySymType) {
 	n := y.val.(string)
-	val := yylex.(*vm).globalvar[n]
+	val := vmrt.globalvar[n]
 	typ := reflect.TypeOf(val)
 	fmt.Printf("%s: <%v>\n", n, typ)
 }

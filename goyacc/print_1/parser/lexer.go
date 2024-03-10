@@ -43,8 +43,9 @@ func (v *vm) Lex(lval *yySymType) int {
 			case unicode.IsDigit(c):
 				return v.parseNumber(lval)
 			case c == '/' && v.lookAheadIs(1, '/'):
-				v.move(len(v.script) - v.offset)
-				return 0
+				gap := len(v.script) - v.offset
+				v.move(gap)
+				return Comment
 			default:
 				miso.Debugf("default %v, %v", c, string(c))
 				v.move(1)
