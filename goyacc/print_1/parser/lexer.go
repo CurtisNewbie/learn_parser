@@ -112,7 +112,7 @@ func (v *vm) parseNumber(lval *yySymType) int {
 	if isFloat {
 		lval.val = cast.ToFloat64(v.script[v.offset : v.offset+i])
 	} else {
-		lval.val = cast.ToInt(v.script[v.offset : v.offset+i])
+		lval.val = cast.ToInt64(v.script[v.offset : v.offset+i])
 	}
 	miso.Debugf("label.val: %v", lval.val)
 	v.move(i)

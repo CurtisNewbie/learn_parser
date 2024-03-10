@@ -14,7 +14,7 @@ func ValAdd(a any, b any) any {
 	if ta.Kind() == reflect.Float64 || tb.Kind() == reflect.Float64 {
 		return cast.ToFloat64(a) + cast.ToFloat64(b)
 	} else {
-		return a.(int) + b.(int) // we only supports float64 and int for now
+		return a.(int64) + b.(int64)
 	}
 }
 
@@ -25,7 +25,7 @@ func ValMinus(a any, b any) any {
 	if ta.Kind() == reflect.Float64 || tb.Kind() == reflect.Float64 {
 		return cast.ToFloat64(a) - cast.ToFloat64(b)
 	} else {
-		return a.(int) - b.(int) // we only supports float64 and int for now
+		return a.(int64) - b.(int64)
 	}
 }
 
@@ -36,7 +36,7 @@ func ValMul(a any, b any) any {
 	if ta.Kind() == reflect.Float64 || tb.Kind() == reflect.Float64 {
 		return cast.ToFloat64(a) * cast.ToFloat64(b)
 	} else {
-		return a.(int) * b.(int) // we only supports float64 and int for now
+		return a.(int64) * b.(int64)
 	}
 }
 
@@ -47,7 +47,7 @@ func ValDiv(a any, b any) any {
 	if ta.Kind() == reflect.Float64 || tb.Kind() == reflect.Float64 {
 		return cast.ToFloat64(a) / cast.ToFloat64(b)
 	} else {
-		return a.(int) / b.(int) // we only supports float64 and int for now
+		return a.(int64) / b.(int64)
 	}
 }
 
@@ -89,4 +89,8 @@ func PrintType(y yySymType, yylex yyLexer) {
 	val := yylex.(*vm).globalvar[n]
 	typ := reflect.TypeOf(val)
 	fmt.Printf("%s: <%v>\n", n, typ)
+}
+
+func SyntaxError() {
+	println("syntax error")
 }
