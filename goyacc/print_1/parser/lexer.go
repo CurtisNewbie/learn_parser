@@ -148,7 +148,7 @@ func (v *vm) remaining() string {
 
 func (v *vm) parseString(lval *yySymType) int {
 	miso.Debugf("parsestring, starting at: %v", v.offset)
-	i := 2
+	i := 1 // [0] is '\''
 	for {
 		if c, ok := v.lookAheadAt(i); ok {
 			if c == '\'' {
