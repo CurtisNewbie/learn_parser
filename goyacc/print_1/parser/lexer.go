@@ -39,6 +39,8 @@ func (v *vm) Lex(lval *yySymType) int {
 				return v.parseString(lval)
 			case c == '\n' || c == ' ' || c == '\t':
 				v.move(1)
+
+				// TODO: this should be fixed, it changes the grammer
 				continue
 			case unicode.IsLetter(c):
 				if d, ok := v.parseKeywords(lval); ok {

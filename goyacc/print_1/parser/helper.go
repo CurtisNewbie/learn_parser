@@ -1,8 +1,12 @@
 package parser
 
 import (
+	"bytes"
 	"fmt"
+	"io"
+	"net/http"
 	"reflect"
+	"strings"
 
 	"github.com/spf13/cast"
 )
@@ -124,8 +128,55 @@ func Debugf(s string, args ...any) {
 	}
 }
 
+// TODO: return yySymType as result
 func HttpSend(method string, url string, header yySymType, body yySymType) {
 	fmt.Printf("Sending '%v %v', %#v, %#v\n", method, url, header, body)
+
+	var br io.Reader = nil
+	if body.val != nil {
+		br = bytes.NewReader([]byte(body.val.(string)))
+	}
+
+	r, err := http.NewRequest(method, url, br)
+	if err != nil {
+		fmt.Printf("ERROR: failed to send http request, %v", err)
+		return
+	}
+
+	if br != nil {
+		if body.hint == "json" {
+			r.Header.Set("Content-Type", "application/json")
+		} else if body.hint == "text" {
+			r.Header.Set("Content-Type", "text/plain")
+		}
+	}
+	if harr, ok := header.val.([]string); ok {
+		for _, v := range harr {
+			tk := strings.SplitN(v, ":", 1)
+			if len(tk) > 1 {
+				r.Header.Add(tk[0], tk[1])
+			}
+		}
+	} else if hs, ok := header.val.(string); ok {
+		tk := strings.SplitN(hs, ":", 1)
+		if len(tk) > 1 {
+			r.Header.Add(tk[0], tk[1])
+		}
+	}
+
+	res, err := http.DefaultClient.Do(r)
+	if err != nil {
+		fmt.Printf("ERROR: failed to send http request, %v\n", err)
+		return
+	}
+	defer res.Body.Close()
+	buf, err := io.ReadAll(res.Body)
+	if err != nil {
+		fmt.Printf("ERROR: failed to read http response, %v\n", err)
+		return
+	}
+
+	fmt.Printf("Returned response: %d, body: %s\n", res.StatusCode, buf)
 }
 
 func joinHeaders(h1 yySymType, h2 yySymType) yySymType {
