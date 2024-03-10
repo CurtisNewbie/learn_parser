@@ -123,3 +123,28 @@ func Debugf(s string, args ...any) {
 		fmt.Printf("[DEBUG] "+s+"\n", args...)
 	}
 }
+
+func HttpSend(method string, url string, header yySymType, body yySymType) {
+	fmt.Printf("Sending '%v %v', %#v, %#v\n", method, url, header, body)
+}
+
+func joinHeaders(h1 yySymType, h2 yySymType) yySymType {
+	v1 := h1.val
+	v2 := h2.val
+
+	arr := []string{}
+	if varr, ok := v1.([]string); ok {
+		arr = append(arr, varr...)
+	} else {
+		arr = append(arr, cast.ToString(v1))
+	}
+
+	if varr, ok := v2.([]string); ok {
+		arr = append(arr, varr...)
+	} else {
+		arr = append(arr, cast.ToString(v2))
+	}
+	return yySymType{
+		val: arr,
+	}
+}

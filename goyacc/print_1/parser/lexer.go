@@ -10,9 +10,18 @@ import (
 )
 
 var (
-	vmrt    = newVm()
-	printKw = []string{"print", "echo"}
-	typeKw  = "type"
+	vmrt = newVm()
+
+	kwTable = map[string]int{
+		"print":  Print,
+		"type":   Type,
+		"GET":    Get,
+		"PUT":    Put,
+		"POST":   Post,
+		"HEAD":   Head,
+		"DELETE": Delete,
+		"JSON":   Json,
+	}
 )
 
 type vm struct {
@@ -32,11 +41,7 @@ func (v *vm) Lex(lval *yySymType) int {
 				v.move(1)
 				continue
 			case unicode.IsLetter(c):
-				// TODO: refactor to a table like matching
-				if d, ok := v.parseKeywords(lval, printKw, Print); ok {
-					return d
-				}
-				if d, ok := v.parseKeyword(lval, typeKw, Type); ok {
+				if d, ok := v.parseKeywords(lval); ok {
 					return d
 				}
 				return v.parseLabel(lval)
@@ -46,6 +51,15 @@ func (v *vm) Lex(lval *yySymType) int {
 				gap := len(v.script) - v.offset
 				v.move(gap)
 				return Comment
+			case c == '-':
+				if v.lookAheadIs(1, 'h') { // -h
+					v.move(2)
+					return Header
+				}
+				if v.lookAheadIs(1, 'd') { // -d
+					v.move(2)
+					return Body
+				}
 			default:
 				Debugf("default %v, %v", c, string(c))
 				v.move(1)
@@ -165,9 +179,9 @@ func (v *vm) parseString(lval *yySymType) int {
 	panic(fmt.Sprintf("illegal syntax for string, %#v", v))
 }
 
-func (v *vm) parseKeywords(lval *yySymType, keywords []string, keywordType int) (int, bool) {
-	for _, kw := range keywords {
-		if i, ok := v.parseKeyword(lval, kw, keywordType); ok {
+func (v *vm) parseKeywords(lval *yySymType) (int, bool) {
+	for kw, kwtp := range kwTable {
+		if i, ok := v.parseKeyword(lval, kw, kwtp); ok {
 			return i, true
 		}
 	}

@@ -1,1 +1,1 @@
-goyacc -o parser/y.go parser/parser.y
+( cd parser && goyacc -o y.go parser.y)

@@ -6,3 +6,10 @@ print
 b = 1 * 2 + 3
 print b // this should be 5
 print
+
+GET 'http://localhost:8080' -h 'myapp:yoyooy' -h 'myapp2:nonono' -d JSON('{ abc }')
+GET 'http://localhost:8080' -h 'myapp:yoyooy' -h 'myapp2:nonono' -d '{ abc }'
+PUT 'http://localhost:8080'
+POST 'http://localhost:8080'
+HEAD 'http://localhost:8080'
+DELETE 'http://localhost:8080'

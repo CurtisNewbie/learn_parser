@@ -4,7 +4,7 @@ package parser
 %}
 
 %union{
-	typ string
+    hint string
 	val any
 }
 
@@ -14,10 +14,13 @@ package parser
 %token Label
 %token Type
 %token Comment
+%token Get Put Post Delete Head
+%token Header Body Json
 
 %left '='
 %left '+' '-'
 %left '*' '/'
+%left Header ' '
 
 %start expression
 
@@ -34,6 +37,7 @@ statement:
     | label_st
     | type_st
     | arith_st
+    | network_st
 
 label_st:
     Label { PrintYySymDebug($1) }
@@ -64,3 +68,23 @@ eval_expr:
     Number { $$ = $1 }
     | Label { $$ = yySymType { val: GlobalVarRead($1) } }
     | arith_st { $$ = $1 }
+
+header_sg:
+    Header String { $$ = $2 }
+
+header_st:
+    header_sg { $$ = $1 }
+    | /* empty */
+    | header_sg header_sg { $$ = joinHeaders($1, $2) }
+
+body_st:
+    /* empty */
+    | Body String { $$ = yySymType{ val: $2.val, hint: "text" } }
+    | Body Json '(' String ')' { $$ = yySymType{ val: $4.val, hint: "json" } }
+
+network_st:
+    Get String header_st body_st { HttpSend("GET", $2.val.(string), $3, $4) }
+    | Put String header_st body_st { HttpSend("PUT", $2.val.(string), $3, $4) }
+    | Post String header_st body_st { HttpSend("POST", $2.val.(string), $3, $4) }
+    | Delete String header_st body_st { HttpSend("DELETE", $2.val.(string), $3, $4) }
+    | Head String header_st body_st { HttpSend("HEAD", $2.val.(string), $3, $4) }
