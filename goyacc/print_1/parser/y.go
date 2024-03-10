@@ -13,9 +13,9 @@ import (
 
 //line parser/parser.y:10
 type yySymType struct {
-	yys  int
-	intv int
-	strv string
+	yys int
+	typ string
+	val any
 }
 
 const String = 57346
@@ -49,40 +49,40 @@ var yyExca = [...]int8{
 
 const yyPrivate = 57344
 
-const yyLast = 13
+const yyLast = 14
 
 var yyAct = [...]int8{
-	11, 12, 7, 13, 8, 9, 4, 10, 6, 5,
-	3, 2, 1,
+	12, 13, 7, 14, 10, 11, 8, 9, 6, 5,
+	4, 3, 2, 1,
 }
 
 var yyPact = [...]int16{
 	2, -1000, -1000, -1000, -1000, -6, 0, -4, -1000, -1000,
-	-1000, -1000, -1000, -1000,
+	-1000, -1000, -1000, -1000, -1000,
 }
 
 var yyPgo = [...]int8{
-	0, 12, 11, 10, 6,
+	0, 13, 12, 11, 10, 6,
 }
 
 var yyR1 = [...]int8{
-	0, 1, 1, 1, 4, 3, 3, 3, 2, 2,
-	2,
+	0, 1, 1, 1, 4, 5, 5, 3, 3, 2,
+	2, 2,
 }
 
 var yyR2 = [...]int8{
-	0, 1, 1, 1, 1, 2, 2, 2, 3, 3,
-	3,
+	0, 1, 1, 1, 1, 1, 1, 2, 2, 3,
+	3, 3,
 }
 
 var yyChk = [...]int16{
-	-1000, -1, -2, -3, -4, 7, 6, 8, 4, 5,
-	7, 4, 5, 7,
+	-1000, -1, -2, -3, -4, 7, 6, 8, -5, 7,
+	4, 5, 4, 5, 7,
 }
 
 var yyDef = [...]int8{
-	0, -2, 1, 2, 3, 4, 0, 0, 5, 6,
-	7, 8, 9, 10,
+	0, -2, 1, 2, 3, 4, 0, 0, 7, 8,
+	5, 6, 9, 10, 11,
 }
 
 var yyTok1 = [...]int8{
@@ -444,44 +444,43 @@ yydefault:
 		yyDollar = yyS[yypt-1 : yypt+1]
 //line parser/parser.y:30
 		{
-			fmt.Printf("Syntax error: are you trying to read %v?\n", yyDollar[1].strv)
-		}
-	case 5:
-		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser/parser.y:35
-		{
-			println(yyDollar[2].strv)
-		}
-	case 6:
-		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser/parser.y:39
-		{
-			println(yyDollar[2].intv)
+			fmt.Printf("Syntax error: are you trying to read %v?\n", yyDollar[1].val)
 		}
 	case 7:
 		yyDollar = yyS[yypt-2 : yypt+1]
-//line parser/parser.y:43
+//line parser/parser.y:36
 		{
-			v := yylex.(*vm).globalvar[yyDollar[2].strv]
-			fmt.Printf("%#v\n", v)
+			println(yyDollar[2].val)
 		}
 	case 8:
-		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser/parser.y:49
+		yyDollar = yyS[yypt-2 : yypt+1]
+//line parser/parser.y:40
 		{
-			yylex.(*vm).globalvar[yyDollar[1].strv] = yyDollar[3].strv
+			n := yyDollar[2].val.(string)
+			v := yylex.(*vm).globalvar[n]
+			fmt.Printf("%#v\n", v)
 		}
 	case 9:
 		yyDollar = yyS[yypt-3 : yypt+1]
-//line parser/parser.y:53
+//line parser/parser.y:47
 		{
-			yylex.(*vm).globalvar[yyDollar[1].strv] = yyDollar[3].intv
+			n := yyDollar[1].val.(string)
+			yylex.(*vm).globalvar[n] = yyDollar[3].val
 		}
 	case 10:
 		yyDollar = yyS[yypt-3 : yypt+1]
+//line parser/parser.y:52
+		{
+			n := yyDollar[1].val.(string)
+			yylex.(*vm).globalvar[n] = yyDollar[3].val
+		}
+	case 11:
+		yyDollar = yyS[yypt-3 : yypt+1]
 //line parser/parser.y:57
 		{
-			yylex.(*vm).globalvar[yyDollar[1].strv] = yylex.(*vm).globalvar[yyDollar[3].strv]
+			n1 := yyDollar[1].val.(string)
+			n2 := yyDollar[3].val.(string)
+			yylex.(*vm).globalvar[n1] = yylex.(*vm).globalvar[n2]
 		}
 	}
 	goto yystack /* stack new state and value */

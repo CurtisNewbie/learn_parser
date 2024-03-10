@@ -37,11 +37,9 @@ func (v *vm) Lex(lval *yySymType) int {
 				return v.parseLabel(lval)
 			case unicode.IsDigit(c):
 				return v.parseNumber(lval)
-			case c == '/':
-				if ch, ok := v.lookAheadAt(1); ok && ch == '/' {
-					v.move(len(v.script) - v.offset)
-					return 0
-				}
+			case c == '/' && v.lookAheadIs(1, '/'):
+				v.move(len(v.script) - v.offset)
+				return 0
 			default:
 				miso.Debugf("default %v, %v", c, string(c))
 				v.move(1)
@@ -76,6 +74,13 @@ func (v *vm) lookAheadAt(n int) (rune, bool) {
 	return rune(c), true
 }
 
+func (v *vm) lookAheadIs(n int, c rune) bool {
+	if ch, ok := v.lookAheadAt(1); ok && ch == c {
+		return true
+	}
+	return false
+}
+
 func (v *vm) move(gap int) {
 	v.offset = v.offset + gap
 	miso.Debugf("move %v to %v", gap, v.offset)
@@ -84,19 +89,27 @@ func (v *vm) move(gap int) {
 func (v *vm) parseNumber(lval *yySymType) int {
 	miso.Debugf("parseNumber, remaining=%v", v.remaining())
 	i := 1
+	isFloat := false
 	for {
 		if c, ok := v.lookAheadAt(i); ok {
-			if c == ' ' {
+			if c != '.' && !unicode.IsDigit(c) {
 				break
 			} else {
+				if c == '.' {
+					isFloat = true
+				}
 				i += 1
 			}
 		} else {
 			break
 		}
 	}
-	lval.intv = cast.ToInt(v.script[v.offset : v.offset+i])
-	miso.Debugf("label.intv: %v", lval.intv)
+	if isFloat {
+		lval.val = cast.ToFloat64(v.script[v.offset : v.offset+i])
+	} else {
+		lval.val = cast.ToInt(v.script[v.offset : v.offset+i])
+	}
+	miso.Debugf("label.val: %v", lval.val)
 	v.move(i)
 	miso.Debugf("offset: %v", v.remaining())
 	return Number
@@ -116,8 +129,8 @@ func (v *vm) parseLabel(lval *yySymType) int {
 			break
 		}
 	}
-	lval.strv = v.script[v.offset : v.offset+i]
-	miso.Debugf("label.strv: %v", lval.strv)
+	lval.val = v.script[v.offset : v.offset+i]
+	miso.Debugf("label.val: %v", lval.val)
 	v.move(i)
 	miso.Debugf("offset: %v", v.script[v.offset:])
 	return Label
@@ -133,8 +146,8 @@ func (v *vm) parseString(lval *yySymType) int {
 	for {
 		if c, ok := v.lookAheadAt(i); ok {
 			if c == '\'' {
-				lval.strv = v.script[v.offset+1 : v.offset+i]
-				miso.Debugf("lval.strv: %v, %v, %v", v.script[v.offset+1:v.offset+i], v.offset, v.offset+i)
+				lval.val = v.script[v.offset+1 : v.offset+i]
+				miso.Debugf("lval.val : %v, %v, %v", v.script[v.offset+1:v.offset+i], v.offset, v.offset+i)
 				v.move(i + 1)
 				return String
 			}

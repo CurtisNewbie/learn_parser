@@ -8,8 +8,8 @@ import (
 %}
 
 %union{
-    intv int
-    strv string
+	typ string
+	val any
 }
 
 %token String
@@ -28,32 +28,34 @@ expression:
 
 label_st: Label
 {
-    fmt.Printf("Syntax error: are you trying to read %v?\n", $1.strv)
+    fmt.Printf("Syntax error: are you trying to read %v?\n", $1.val)
 }
 
-print_st: Print String
-{
-    println($2.strv)
-}
-| Print Number
-{
-    println($2.intv)
+Value: String | Number
+
+print_st: Print Value {
+    println($2.val)
 }
 | Print Label
 {
-    v := yylex.(*vm).globalvar[$2.strv]
+    n := $2.val.(string)
+    v := yylex.(*vm).globalvar[n]
     fmt.Printf("%#v\n", v)
 }
 
 assignment: Label '=' String
 {
-    yylex.(*vm).globalvar[$1.strv] = $3.strv
+    n := $1.val.(string)
+    yylex.(*vm).globalvar[n] = $3.val
 }
 | Label '=' Number
 {
-    yylex.(*vm).globalvar[$1.strv] = $3.intv
+    n := $1.val.(string)
+    yylex.(*vm).globalvar[n] = $3.val
 }
 | Label '=' Label
 {
-    yylex.(*vm).globalvar[$1.strv] = yylex.(*vm).globalvar[$3.strv]
+    n1 := $1.val.(string)
+    n2 := $3.val.(string)
+    yylex.(*vm).globalvar[n1] = yylex.(*vm).globalvar[n2]
 }
