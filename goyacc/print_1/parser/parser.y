@@ -4,7 +4,6 @@ package parser
 %}
 
 %union{
-    hint string
     val any
 }
 
@@ -56,12 +55,18 @@ print_st:
 type_st:
     Type Label { PrintType($2) }
 
+json_st:
+    Json '(' String ')' { $$ = yySymType{ val: StrToMap($3.val) } }
+    | Json '(' Label ')' { $$ = yySymType{ val: StrToMap(GlobalVarRead($3)) } }
+    | Json '(' field_st ')' { $$ = yySymType{ val: StrToMap($3.val) } }
+
 assignment:
     Label '=' String { GlobalVarWrite($1, $3.val) }
     | Label '=' eval_expr { GlobalVarWrite($1, $3.val) }
     | Label '=' { SyntaxError() }
     | Label '=' network_st { GlobalVarWrite($1, $3.val) }
     | Label '=' field_st { GlobalVarWrite($1, $3.val) }
+    | Label '=' json_st { GlobalVarWrite($1, $3.val) }
 
 arith_st:
     eval_expr '+' eval_expr { $$ = yySymType{ val: ValAdd($1.val, $3.val) } }
@@ -84,8 +89,8 @@ header_st:
 
 body_st:
     /* empty */
-    | Body String { $$ = yySymType{ val: $2.val, hint: "text" } }
-    | Body Json '(' String ')' { $$ = yySymType{ val: $4.val, hint: "json" } }
+    | Body String { $$ = yySymType{ val: $2.val } }
+    | Body json_st { $$ = yySymType{ val: $2.val } }
 
 network_st:
     Get String header_st body_st { $$ = HttpSend("GET", $2.val.(string), $3, $4) }
@@ -95,4 +100,10 @@ network_st:
     | Head String header_st body_st { $$ = HttpSend("HEAD", $2.val.(string), $3, $4) }
 
 field_st:
-    Label '.' Label { $$ = yySymType{ val: WalkField($1, $3.val) } }
+    Label '.' Label {
+        v := GlobalVarRead($1)
+        $$ = yySymType{ val: WalkField(v, $3.val) }
+    }
+    | field_st '.' Label {
+        $$ = yySymType{ val: WalkField($1.val, $3.val) }
+    }

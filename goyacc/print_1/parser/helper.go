@@ -2,6 +2,7 @@ package parser
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
@@ -132,9 +133,21 @@ func Debugf(s string, args ...any) {
 func HttpSend(method string, url string, header yySymType, body yySymType) yySymType {
 	fmt.Printf("Sending '%v %v', %#v, %#v\n", method, url, header, body)
 
+	var typ string
 	var br io.Reader = nil
 	if body.val != nil {
-		br = bytes.NewReader([]byte(body.val.(string)))
+		if s, ok := body.val.(string); ok {
+			br = bytes.NewReader([]byte(s))
+			typ = "text"
+		}
+		if j, ok := body.val.(map[string]any); ok {
+			byt, err := json.Marshal(j)
+			if err != nil {
+				panic(fmt.Sprintf("failed to marshal json, %#v, %v", j, err))
+			}
+			br = bytes.NewReader(byt)
+			typ = "json"
+		}
 	}
 
 	r, err := http.NewRequest(method, url, br)
@@ -144,9 +157,9 @@ func HttpSend(method string, url string, header yySymType, body yySymType) yySym
 	}
 
 	if br != nil {
-		if body.hint == "json" {
+		if typ == "json" {
 			r.Header.Set("Content-Type", "application/json")
-		} else if body.hint == "text" {
+		} else if typ == "text" {
 			r.Header.Set("Content-Type", "text/plain")
 		}
 	}
@@ -201,14 +214,24 @@ func joinHeaders(h1 yySymType, h2 yySymType) yySymType {
 	}
 }
 
-func WalkField(obj yySymType, field any) any {
-	fieldStr := cast.ToString(field)
-	v := GlobalVarRead(obj)
+func WalkField(v any, field any) any {
 	if v == nil {
 		return nil
 	}
+	fieldStr := cast.ToString(field)
 	if m, ok := v.(map[string]any); ok {
 		return m[fieldStr]
+	}
+	return nil
+}
+
+func StrToMap(v any) any {
+	if s, ok := v.(string); ok {
+		var m map[string]any
+		if err := json.Unmarshal([]byte(s), &m); err != nil {
+			panic(fmt.Sprintf("Invalid json, %v, %v", s, err))
+		}
+		return m
 	}
 	return nil
 }
