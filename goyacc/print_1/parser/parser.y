@@ -46,9 +46,9 @@ Value:
     String | Number
 
 print_st:
-    Print Value { PrintYySym($2) }
-    | Print Label { PrintGlobalYySym($2) }
-    | Print { println("") }
+    Print '(' Value ')' { PrintYySym($3) }
+    | Print '(' Label ')' { PrintGlobalYySym($3) }
+    | Print '(' ')' { println("") }
 
 type_st:
     Type Label { PrintType($2) }

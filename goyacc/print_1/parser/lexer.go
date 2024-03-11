@@ -15,12 +15,12 @@ var (
 	kwTable = map[string]int{
 		"print":  Print,
 		"type":   Type,
+		"json":   Json,
 		"GET":    Get,
 		"PUT":    Put,
 		"POST":   Post,
 		"HEAD":   Head,
 		"DELETE": Delete,
-		"JSON":   Json,
 	}
 )
 
