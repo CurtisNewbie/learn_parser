@@ -69,6 +69,7 @@ func GlobalVarRead(y yySymType) any {
 }
 
 func GlobalVarWrite(y yySymType, val any) {
+	Debugf("GlobalVarWrite: %v, %v\n", y.val, val)
 	n := y.val.(string)
 	GlobalVar()[n] = val
 }
@@ -128,8 +129,7 @@ func Debugf(s string, args ...any) {
 	}
 }
 
-// TODO: return yySymType as result
-func HttpSend(method string, url string, header yySymType, body yySymType) {
+func HttpSend(method string, url string, header yySymType, body yySymType) yySymType {
 	fmt.Printf("Sending '%v %v', %#v, %#v\n", method, url, header, body)
 
 	var br io.Reader = nil
@@ -140,7 +140,7 @@ func HttpSend(method string, url string, header yySymType, body yySymType) {
 	r, err := http.NewRequest(method, url, br)
 	if err != nil {
 		fmt.Printf("ERROR: failed to send http request, %v", err)
-		return
+		return yySymType{}
 	}
 
 	if br != nil {
@@ -167,16 +167,17 @@ func HttpSend(method string, url string, header yySymType, body yySymType) {
 	res, err := http.DefaultClient.Do(r)
 	if err != nil {
 		fmt.Printf("ERROR: failed to send http request, %v\n", err)
-		return
+		return yySymType{}
 	}
 	defer res.Body.Close()
 	buf, err := io.ReadAll(res.Body)
 	if err != nil {
 		fmt.Printf("ERROR: failed to read http response, %v\n", err)
-		return
+		return yySymType{}
 	}
 
-	fmt.Printf("Returned response: %d, body: %s\n", res.StatusCode, buf)
+	Debugf("Returned response: %d, body: %s", res.StatusCode, buf)
+	return yySymType{val: map[string]any{"code": res.StatusCode, "body": buf}}
 }
 
 func joinHeaders(h1 yySymType, h2 yySymType) yySymType {
@@ -198,4 +199,16 @@ func joinHeaders(h1 yySymType, h2 yySymType) yySymType {
 	return yySymType{
 		val: arr,
 	}
+}
+
+func WalkField(obj yySymType, field any) any {
+	fieldStr := cast.ToString(field)
+	v := GlobalVarRead(obj)
+	if v == nil {
+		return nil
+	}
+	if m, ok := v.(map[string]any); ok {
+		return m[fieldStr]
+	}
+	return nil
 }

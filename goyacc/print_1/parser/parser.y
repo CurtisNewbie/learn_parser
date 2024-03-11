@@ -38,6 +38,7 @@ statement:
     | type_st
     | arith_st
     | network_st
+    | field_st
 
 label_st:
     Label { PrintYySymDebug($1) }
@@ -49,6 +50,8 @@ print_st:
     Print '(' Value ')' { PrintYySym($3) }
     | Print '(' Label ')' { PrintGlobalYySym($3) }
     | Print '(' ')' { println("") }
+    | Print '(' field_st ')' { PrintYySym($3) }
+    | Print '(' network_st ')' { PrintYySym($3) }
 
 type_st:
     Type Label { PrintType($2) }
@@ -57,6 +60,8 @@ assignment:
     Label '=' String { GlobalVarWrite($1, $3.val) }
     | Label '=' eval_expr { GlobalVarWrite($1, $3.val) }
     | Label '=' { SyntaxError() }
+    | Label '=' network_st { GlobalVarWrite($1, $3.val) }
+    | Label '=' field_st { GlobalVarWrite($1, $3.val) }
 
 arith_st:
     eval_expr '+' eval_expr { $$ = yySymType{ val: ValAdd($1.val, $3.val) } }
@@ -83,8 +88,11 @@ body_st:
     | Body Json '(' String ')' { $$ = yySymType{ val: $4.val, hint: "json" } }
 
 network_st:
-    Get String header_st body_st { HttpSend("GET", $2.val.(string), $3, $4) }
-    | Put String header_st body_st { HttpSend("PUT", $2.val.(string), $3, $4) }
-    | Post String header_st body_st { HttpSend("POST", $2.val.(string), $3, $4) }
-    | Delete String header_st body_st { HttpSend("DELETE", $2.val.(string), $3, $4) }
-    | Head String header_st body_st { HttpSend("HEAD", $2.val.(string), $3, $4) }
+    Get String header_st body_st { $$ = HttpSend("GET", $2.val.(string), $3, $4) }
+    | Put String header_st body_st { $$ = HttpSend("PUT", $2.val.(string), $3, $4) }
+    | Post String header_st body_st { $$ = HttpSend("POST", $2.val.(string), $3, $4) }
+    | Delete String header_st body_st { $$ = HttpSend("DELETE", $2.val.(string), $3, $4) }
+    | Head String header_st body_st { $$ = HttpSend("HEAD", $2.val.(string), $3, $4) }
+
+field_st:
+    Label '.' Label { $$ = yySymType{ val: WalkField($1, $3.val) } }
