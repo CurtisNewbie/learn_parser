@@ -12,3 +12,4 @@ go install golang.org/x/tools/cmd/goyacc@master
 - https://github.com/moorara/compiler/tree/main
 - https://moorara.medium.com/compilers-101-in-go-34bf329d491d
 - https://www.dolthub.com/blog/2023-07-28-goyacc-parser-tips-tricks/
+- https://www2.cs.arizona.edu/~debray/Teaching/CSc453/DOCS/conflicts.pdf
