@@ -3,21 +3,12 @@ package main
 import (
 	"bufio"
 	"demo/parser"
-	"flag"
+	"fmt"
 	"os"
 )
 
-var (
-	file *string
-)
-
-func init() {
-	file = flag.String("file", "", "path to script file")
-}
-
 func main() {
-	flag.Parse()
-	if *file == "" {
+	if len(os.Args) < 2 || os.Args[1] == "" {
 		println(">>> Entered interactive mode:")
 		print(">>> ")
 		for {
@@ -34,7 +25,8 @@ func main() {
 		}
 	}
 
-	f, err := os.ReadFile(*file)
+	fmt.Printf(">>> Reading file %v\n", os.Args[1])
+	f, err := os.ReadFile(os.Args[1])
 	if err != nil {
 		panic(err)
 	}

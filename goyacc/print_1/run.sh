@@ -1,1 +1,1 @@
-go run main.go -file=testdata/myscript.wow
+go run main.go testdata/myscript.wow
